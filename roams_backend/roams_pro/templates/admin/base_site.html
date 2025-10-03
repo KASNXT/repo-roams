@@ -1,0 +1,14 @@
+{% extends "admin/base.html" %}
+{% load static %}
+{% block title %}ROAM System For Aquifiers Admin {% endblock %}
+{% block branding %}
+<div id="branding">
+  <img src="{% static 'img/roamslogo.png' %}" alt="Company Logo" style="max-height: 50px;">
+  <h1> Remote Operation and Monitoring System For Aquifers</h1>
+</div>
+{% endblock %}
+{% block extrastyle %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/logo_branding.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/admin_login.css' %}">
+
+{% endblock %}

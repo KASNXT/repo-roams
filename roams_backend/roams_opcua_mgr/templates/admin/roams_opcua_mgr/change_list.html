@@ -1,0 +1,24 @@
+
+
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block content %}
+  {{ block.super }}
+  <h3>Delete Logs with Progress</h3>
+  <select id="client-config-id">
+    {% for config in cl.queryset %}
+      <option value="{{ config.id }}">{{ config.station_name }}</option>
+    {% endfor %}
+  </select>
+  <button onclick="startDelete()">Delete Logs</button>
+  <div id="progress-bar" style="width:100%;background:#ccc;margin-top:10px;">
+    <div id="progress" style="width:0%;background:green;height:20px;"></div>
+  </div>
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script src="{% static 'roams_opcua_mgr/js/delete_progress_bar.js' %}"></script>
+
+{% endblock %}

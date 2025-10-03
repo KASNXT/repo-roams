@@ -1,0 +1,133 @@
+body {
+  background-image: url("/static/img/roamsbgimg.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+  font-family: 'Abel', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  width: 100%;
+  max-width: 350px;
+  background-color: rgba(0, 0, 0, 0.2);
+  color: white;
+  padding: 25px 20px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  border-radius: 8px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.logo img {
+  width: 70px;
+  height: auto;
+  margin-bottom: 1px;
+  align-items: center;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.form-container {
+  padding: 0;
+}
+
+.form-container label {
+  display: block;
+  text-align: left;
+  font-size: 12px;
+  letter-spacing: 1px;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 12px;
+  border: 1px solid white;
+  background-color: transparent;
+  color: white;
+  box-sizing: border-box;
+}
+
+input:focus {
+  outline: none;
+  border-color: #ccc;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  background-color: transparent;
+  border: 1px solid white;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.error-message {
+  color: red;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Small screens only: center items vertically and adjust padding */
+@media screen and (max-width: 768px) {
+  body {
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-size: cover;
+    background-position: 70%;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    flex-direction: column;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 300px;
+    margin: 30px auto 0;
+    padding:30px  20px;
+    border-radius: 6px;
+    box-sizing: border-box;
+  }
+
+  .title {
+    font-size: 18px;
+    text-align: center;
+  }
+
+  .form-container input[type="text"],
+  .form-container input[type="password"] {
+    font-size: 16px;
+    padding: 10px;
+  }
+
+  .logo img {
+    width: 80px;             /* Slightly bigger for visibility */
+  }
+
+  button {
+    padding: 12px 18px;
+    font-size: 16px;
+  }
+}

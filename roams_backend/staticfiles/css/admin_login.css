@@ -1,0 +1,16 @@
+/* Apply background image only to the login page */
+body.login {
+    background: url("../img/roamsbgimg.jpg") no-repeat center center fixed;
+    background-size: cover;
+    padding-bottom: 0px
+}
+
+/* Keep the form appearance as default */
+#content {
+    margin-bottom: 0px; /* Pushes login box up */
+    background: rgba(255, 255, 255, 0.927);  /* Keeps the original white background */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px); /* Adds a slight blur effect */
+}

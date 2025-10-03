@@ -1,0 +1,10 @@
+{% extends "admin/change_form.html" %}
+{% load static %} 
+{% block extrahead %}
+    {{ block.super }}
+    <script src="{% static 'roams_opcua_mgr/js/authentication_dynamic.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'roams_opcua_mgr/css/custom_opcua_style.css' %}">
+    <script src="{% static 'roams_opcua_mgr/js/config_dynamic.js' %}"></script>
+    
+   
+{% endblock %}

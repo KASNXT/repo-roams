@@ -1,0 +1,17 @@
+WARNING 2025-10-01 18:40:14,684 opcua_client ⚠️ OPC UA client check already running. Skipping duplicate execution.
+ERROR 2025-10-01 18:40:14,691 opcua_client  Connection failed: [Errno -5] No address associated with hostname
+WARNING 2025-10-01 18:40:14,698 opcua_client 🔄 Retrying connection to mityana bh1...
+WARNING 2025-10-01 18:40:22,630 opcua_client ⚠️ OPC UA client check already running. Skipping duplicate execution.
+WARNING 2025-10-01 18:40:22,635 opcua_client ⚠️ OPC UA client check already running. Skipping duplicate execution.
+ERROR 2025-10-01 18:40:22,644 opcua_client  Connection failed: [Errno 22] Invalid argument
+ERROR 2025-10-01 18:40:22,645 opcua_client  Connection failed: [Errno 22] Invalid argument
+WARNING 2025-10-01 18:40:22,652 opcua_client 🔄 Retrying connection to testing...
+WARNING 2025-10-01 18:40:22,656 opcua_client 🔄 Retrying connection to Bombo bh1...
+Performing system checks...
+
+WARNING 2025-10-01 18:40:24,715 opcua_client ⚠️ mityana bh1: Failed to disconnect stale client: 'NoneType' object has no attribute 'socket'
+WARNING 2025-10-01 18:40:24,841 opcua_client ⚠️ OPC UA client check already running. Skipping duplicate execution.
+ERROR 2025-10-01 18:40:24,857 opcua_client  Connection failed: [Errno -5] No address associated with hostname
+WARNING 2025-10-01 18:40:24,866 opcua_client 🔄 Retrying connection to mityana bh1...
+System check identified no issues (0 silenced).
+Error: That port is already in use.

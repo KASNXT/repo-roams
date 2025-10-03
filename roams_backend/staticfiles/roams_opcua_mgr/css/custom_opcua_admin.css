@@ -1,0 +1,11 @@
+
+.form-row {
+    transition: all 0.3s ease-in-out;
+}
+
+.form-row.hidden {
+    opacity: 0;
+    visibility: hidden;
+    height: 0;
+    overflow: hidden;
+}

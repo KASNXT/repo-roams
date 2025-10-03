@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* ROAMS Industrial Design System */
+    --background: 220 13% 97%;
+    --foreground: 215 25% 17%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 17%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 17%;
+
+    /* Industrial blue primary */
+    --primary: 217 91% 47%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 217 91% 42%;
+
+    /* Professional gray secondary */
+    --secondary: 214 13% 92%;
+    --secondary-foreground: 215 25% 17%;
+
+    --muted: 214 13% 95%;
+    --muted-foreground: 215 10% 46%;
+
+    --accent: 214 13% 92%;
+    --accent-foreground: 215 25% 17%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 13% 88%;
+    --input: 214 13% 88%;
+    --ring: 217 91% 47%;
+
+    /* Status indicators */
+    --status-connected: 142 71% 45%;
+    --status-connected-bg: 142 71% 95%;
+    --status-disconnected: 0 72% 51%;
+    --status-disconnected-bg: 0 72% 95%;
+    --status-warning: 45 93% 47%;
+    --status-warning-bg: 45 93% 95%;
+    --status-neutral: 214 13% 65%;
+    --status-neutral-bg: 214 13% 95%;
+
+    /* Industrial gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 47%), hsl(217 91% 42%));
+    --gradient-surface: linear-gradient(180deg, hsl(0 0% 100%), hsl(214 13% 98%));
+    
+    /* Professional shadows */
+    --shadow-card: 0 2px 8px -2px hsl(215 25% 17% / 0.08);
+    --shadow-floating: 0 8px 24px -6px hsl(215 25% 17% / 0.12);
+    
+    /* Transitions */
+    --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* ROAMS Dark Mode - Industrial Night Theme */
+    --background: 215 28% 8%;
+    --foreground: 214 13% 92%;
+
+    --card: 215 25% 11%;
+    --card-foreground: 214 13% 92%;
+
+    --popover: 215 25% 11%;
+    --popover-foreground: 214 13% 92%;
+
+    --primary: 217 91% 55%;
+    --primary-foreground: 215 28% 8%;
+    --primary-hover: 217 91% 50%;
+
+    --secondary: 215 25% 15%;
+    --secondary-foreground: 214 13% 92%;
+
+    --muted: 215 25% 13%;
+    --muted-foreground: 214 10% 65%;
+
+    --accent: 215 25% 15%;
+    --accent-foreground: 214 13% 92%;
+
+    --destructive: 0 72% 58%;
+    --destructive-foreground: 215 28% 8%;
+
+    --border: 215 25% 18%;
+    --input: 215 25% 18%;
+    --ring: 217 91% 55%;
+
+    /* Dark mode status indicators */
+    --status-connected: 142 71% 52%;
+    --status-connected-bg: 142 71% 12%;
+    --status-disconnected: 0 72% 58%;
+    --status-disconnected-bg: 0 72% 12%;
+    --status-warning: 45 93% 55%;
+    --status-warning-bg: 45 93% 12%;
+    --status-neutral: 214 13% 55%;
+    --status-neutral-bg: 214 13% 12%;
+
+    /* Dark gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 55%), hsl(217 91% 50%));
+    --gradient-surface: linear-gradient(180deg, hsl(215 25% 11%), hsl(215 25% 9%));
+    
+    /* Dark shadows */
+    --shadow-card: 0 2px 8px -2px hsl(0 0% 0% / 0.25);
+    --shadow-floating: 0 8px 24px -6px hsl(0 0% 0% / 0.35);
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
