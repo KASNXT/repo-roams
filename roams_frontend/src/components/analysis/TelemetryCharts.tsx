@@ -1,169 +1,298 @@
-import { useState } from "react";
+// src/components/analysis/TelemetryCharts.tsx
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { TrendingUp, Droplets, Gauge, Battery, Zap } from "lucide-react";
-import type { DateRange } from "react-day-picker";
+import {
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Brush,
+  ScatterChart,
+  Scatter,
+} from "recharts";
+import { Zap } from "lucide-react";
+import { parameterIcons, normalizeKey } from "@/utils/iconMap";
+import { useTagUnits } from "@/hooks/useTagUnits";
+
+// --- Interfaces ---
+export interface Node {
+  id: number | string;
+  tag_name: string | null;
+  add_new_tag_name: string;
+  tag_units: string | null;
+  station_name: string;
+  last_value?: string | number | null;
+  last_updated?: string | null;
+}
+
+export interface TelemetryPoint {
+  timestamp: string;
+  parameter: string;
+  value: number | string | null;
+  station?: string;
+}
 
 interface TelemetryChartsProps {
   wellId: string;
-  dateRange?: DateRange;
+  dateRange?: { from?: Date; to?: Date };
+  autoRefresh?: boolean;
+  searchTerm?: string;
+  nodes: Node[]; // realtime config + last_value
+  historyData: TelemetryPoint[]; // historical telemetry logs from backend
 }
 
-// Mock data for different parameters
-const generateMockData = (parameter: string, dateRange?: DateRange) => {
-  const data = [];
-  
-  // Determine date range - default to last 7 days if no range provided
-  const endDate = dateRange?.to || new Date();
-  const startDate = dateRange?.from || new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000);
-  
-  // Calculate the time difference and determine appropriate intervals
-  const timeDiff = endDate.getTime() - startDate.getTime();
-  const daysDiff = timeDiff / (24 * 60 * 60 * 1000);
-  
-  // Determine data points and intervals based on range
-  let dataPoints: number;
-  let intervalMs: number;
-  let timeFormat: Intl.DateTimeFormatOptions;
-  
-  if (daysDiff <= 1) {
-    // For single day or less: hourly data (24 points)
-    dataPoints = 24;
-    intervalMs = 60 * 60 * 1000; // 1 hour
-    timeFormat = { hour: '2-digit', minute: '2-digit' };
-  } else if (daysDiff <= 7) {
-    // For up to a week: 4-hour intervals
-    dataPoints = Math.ceil(daysDiff * 6);
-    intervalMs = 4 * 60 * 60 * 1000; // 4 hours
-    timeFormat = { month: 'short', day: 'numeric', hour: '2-digit' };
-  } else if (daysDiff <= 30) {
-    // For up to a month: daily data
-    dataPoints = Math.ceil(daysDiff);
-    intervalMs = 24 * 60 * 60 * 1000; // 1 day
-    timeFormat = { month: 'short', day: 'numeric' };
-  } else {
-    // For longer periods: weekly data
-    dataPoints = Math.ceil(daysDiff / 7);
-    intervalMs = 7 * 24 * 60 * 60 * 1000; // 1 week
-    timeFormat = { month: 'short', day: 'numeric' };
-  }
-  
-  for (let i = 0; i < dataPoints; i++) {
-    const time = new Date(startDate.getTime() + i * intervalMs);
-    const hour = time.getHours();
-    const dayOfWeek = time.getDay();
-    
-    let value;
-    switch (parameter) {
-      case 'flow':
-        value = 15 + Math.sin(hour * 0.5) * 3 + Math.sin(dayOfWeek * 0.8) * 2 + Math.random() * 2;
-        break;
-      case 'pressure':
-        value = 8.5 + Math.cos(hour * 0.3) * 1.5 + Math.cos(dayOfWeek * 0.5) * 0.8 + Math.random() * 0.5;
-        break;
-      case 'level':
-        value = Math.max(20, 85 - (hour > 12 ? hour - 12 : 12 - hour) * 2 + Math.sin(dayOfWeek) * 5 + Math.random() * 5);
-        break;
-      case 'power':
-        value = hour > 6 && hour < 22 ? 25 + Math.random() * 10 : 5 + Math.random() * 3;
-        // Add weekly variation
-        value += dayOfWeek < 5 ? 5 : -3; // Higher on weekdays
-        break;
-      default:
-        value = Math.random() * 100;
-    }
-    
-    data.push({
-      time: time.toLocaleString('en-US', timeFormat),
-      value: Math.round(Math.max(0, value) * 10) / 10,
-      timestamp: time.getTime()
+interface ChartDataPoint {
+  time: string;
+  ts: number;
+  value: number;
+}
+
+export const TelemetryCharts = ({
+  wellId,
+  dateRange,
+  autoRefresh = false,
+  searchTerm = "",
+  nodes = [],
+  historyData = [],
+}: TelemetryChartsProps) => {
+  const [chartType, setChartType] = useState<"line" | "area" | "bar" | "scatter">("line");
+  const [selectedParameters, setSelectedParameters] = useState<string[]>([]);
+  const { tagUnits } = useTagUnits();
+  const [brushRanges, setBrushRanges] = useState<Record<string, { start?: number; end?: number }>>({});
+  const [showBrushs, setShowBrushs] = useState<Record<string, boolean>>({});
+  // Make the brush look like a transparent glass tube with rounded knobs,
+  // matching the area chart color (#2563eb) with transparency.
+  useEffect(() => {
+    const styleBrush = () => {
+      const groups = document.querySelectorAll('.recharts-brush');
+      groups.forEach((g) => {
+        // Style the brush background rect
+        const bgRects = (g as Element).querySelectorAll('rect[y="0"]');
+        bgRects.forEach((r) => {
+          const height = parseFloat(r.getAttribute('height') || '12');
+          const rx = height / 2;
+          r.setAttribute('rx', String(rx));
+          r.setAttribute('ry', String(rx));
+          r.setAttribute('fill', 'rgba(37, 99, 235, 0.15)');
+          r.setAttribute('stroke', 'rgba(37, 99, 235, 0.4)');
+          r.setAttribute('stroke-width', '1.5');
+        });
+
+        // Style the traveller knobs (circles or paths)
+        const travellers = (g as Element).querySelectorAll('circle');
+        travellers.forEach((c) => {
+          c.setAttribute('fill', 'rgba(37, 99, 235, 0.8)');
+          c.setAttribute('stroke', 'rgba(37, 99, 235, 1)');
+          c.setAttribute('stroke-width', '2');
+          c.setAttribute('r', '6');
+        });
+
+        // Also style any path elements that might be travellers
+        const paths = (g as Element).querySelectorAll('path');
+        paths.forEach((p) => {
+          if (p.getAttribute('d')) {
+            p.setAttribute('fill', 'rgba(37, 99, 235, 0.8)');
+            p.setAttribute('stroke', 'rgba(37, 99, 235, 1)');
+            p.setAttribute('stroke-width', '1.5');
+          }
+        });
+      });
+    };
+
+    // Run once now and also on animation frame to catch HMR updates
+    styleBrush();
+    const id = requestAnimationFrame(styleBrush);
+    return () => cancelAnimationFrame(id);
+  }, [showBrushs]);
+
+  // Derive realtime telemetry points from nodes' last_value (if any)
+  const realtimePoints: TelemetryPoint[] = useMemo(() => {
+    return nodes
+      .filter((n) => n.last_value !== undefined && n.last_value !== null)
+      .map((n) => ({
+        timestamp: n.last_updated || new Date().toISOString(),
+        parameter: (n.tag_name || n.add_new_tag_name || "").toString(),
+        value: Number(n.last_value) || 0,
+        station: n.station_name,
+      }));
+  }, [nodes]);
+
+  // Merge historyData + realtimePoints => telemetry array
+  // historyData will typically include timestamps and parameter names
+  const mergedTelemetry: TelemetryPoint[] = useMemo(() => {
+    // Convert incoming items to consistent shape and filter by station & dateRange if provided
+    const normalize = (t: any): TelemetryPoint => ({
+      timestamp: t.timestamp || t.time || new Date().toISOString(),
+      parameter: (t.node_tag_name || t.parameter || t.tag_name || "").toString(),
+      value: t.value ?? t.last_value ?? 0,
+      station: t.station_name || t.station || undefined,
     });
-  }
-  
-  return data;
-};
 
-const parameters = [
-  { id: 'flow', name: 'FlowRate', unit: 'm³/h', color: '#2563eb', icon: Droplets },
-  { id: 'pressure', name: 'Pressure', unit: 'bar', color: '#dc2626', icon: Gauge },
-  { id: 'level', name: 'waterLevel', unit: '%', color: '#16a34a', icon: TrendingUp },
-  { id: 'power', name: 'PowerUsage', unit: 'kW', color: '#ea580c', icon: Battery },
-];
+    const all = [
+      ...(Array.isArray(historyData) ? historyData.map(normalize) : []),
+      ...realtimePoints.map(normalize),
+    ];
 
-export const TelemetryCharts = ({ wellId, dateRange }: TelemetryChartsProps) => {
-  const [chartType, setChartType] = useState<'line' | 'area' | 'bar'>('line');
-  const [selectedParameters, setSelectedParameters] = useState(['flow', 'pressure']);
+    // Filter by station (only include items for this well)
+    const byStation = all.filter((t) => {
+      if (!t.station) return true; // keep if station unknown (fallback)
+      return normalizeKey(t.station) === normalizeKey(wellId);
+    });
 
-  const handleParameterToggle = (parameterId: string) => {
-    setSelectedParameters(prev => 
-      prev.includes(parameterId) 
-        ? prev.filter(id => id !== parameterId)
-        : [...prev, parameterId]
+    // Filter by dateRange if provided
+    const byDate = byStation.filter((t) => {
+      if (!dateRange?.from || !dateRange?.to) return true;
+      const ts = new Date(t.timestamp).getTime();
+      return ts >= dateRange.from.getTime() && ts <= dateRange.to.getTime();
+    });
+
+    // Sort ascending timestamp
+    byDate.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+    return byDate;
+  }, [historyData, realtimePoints, wellId, dateRange]);
+
+  // Build list of available parameters (from nodes); default selects all on initial load
+  useEffect(() => {
+    const params = nodes.map((n) => (n.tag_name || n.add_new_tag_name || "").toString()).filter(Boolean);
+    // Set default selected parameters only if none selected yet
+    setSelectedParameters((prev) => (prev.length ? prev : Array.from(new Set(params))));
+    // Only run when nodes change or initially
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodes]);
+
+  // Apply searchTerm to parameter list (client-side)
+  const visibleParameters = useMemo(() => {
+    const lower = searchTerm?.trim().toLowerCase() || "";
+    if (!lower) return selectedParameters;
+    return selectedParameters.filter((p) => p.toLowerCase().includes(lower));
+  }, [selectedParameters, searchTerm]);
+
+  // Toggle parameter selection
+  const handleParameterToggle = (parameter: string) => {
+    setSelectedParameters((prev) =>
+      prev.includes(parameter) ? prev.filter((p) => p !== parameter) : [...prev, parameter]
     );
   };
 
-  const renderChart = (parameter: any, data: any[]) => {
-    const ChartComponent = chartType === 'line' ? LineChart : chartType === 'area' ? AreaChart : BarChart;
-    const DataComponent = chartType === 'line' ? Line : chartType === 'area' ? Area : Bar;
-    
+  // For a given parameter, build chart data points
+  const buildChartData = (paramName: string): ChartDataPoint[] => {
+    const key = normalizeKey(paramName);
+    const arr = mergedTelemetry
+      .filter((t) => normalizeKey(t.parameter) === key)
+      .map((t) => ({
+        time: new Date(t.timestamp).toLocaleString(),
+        ts: new Date(t.timestamp).getTime(),
+        value: Number(t.value) || 0,
+      }));
+    // Keep sorted by timestamp - mergedTelemetry already sorted
+    return arr;
+  };
+
+  // Rendering a single chart block for provided node/parameter
+  const renderChart = (node: Node) => {
+    const paramName = (node.tag_name || node.add_new_tag_name || "").toString();
+    const key = normalizeKey(paramName);
+    const Icon = parameterIcons[key] || parameterIcons.default;
+    const unit = node.tag_units ?? tagUnits[key] ?? "";
+
+    const data = buildChartData(paramName);
+
+    // Apply brush range (if user has zoomed) to the displayed data
+    const range = brushRanges[paramName];
+    const displayedData =
+      range && typeof range.start === "number" && typeof range.end === "number"
+        ? data.slice(range.start, range.end + 1)
+        : data;
+
+    if (!data.length) {
+      return (
+        <div key={String(node.id)} className="h-64 flex items-center justify-center text-muted-foreground border rounded-lg">
+          No data available for <strong className="ml-1">{paramName || "Unnamed Tag"}</strong>
+        </div>
+      );
+    }
+
+    const ChartComponent = data.length === 1 ? ScatterChart : chartType === "line" ? LineChart : chartType === "area" ? AreaChart : BarChart;
+    const DataComponent = data.length === 1 ? Scatter : chartType === "line" ? Line : chartType === "area" ? Area : Bar;
+
+    const isBrushVisible = !!showBrushs[paramName];
+
     return (
-      <div key={parameter.id} className="h-64">
+      <div key={String(node.id)} className={`h-64 ${isBrushVisible ? "mb-8" : "mb-2"}`}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <parameter.icon className="h-5 w-5" style={{ color: parameter.color }} />
-            <h3 className="font-semibold">{parameter.name}</h3>
-            <Badge variant="outline">{parameter.unit}</Badge>
+            <Icon className="h-5 w-5 text-primary" />
+            <h3 className="font-semibold">{paramName || "Unnamed Tag"}</h3>
+            <Badge variant="outline">{unit}</Badge>
           </div>
-          <div className="text-2xl font-bold text-primary">
-            {data[data.length - 1]?.value} {parameter.unit}
+          <div className="flex items-center gap-2">
+            <div className="text-2xl font-bold text-primary">{data[data.length - 1]?.value ?? "--"} {unit}</div>
+            <Button size="xs" variant="outline" onClick={() => setShowBrushs((s) => ({ ...s, [paramName]: !s[paramName] }))}>
+              {isBrushVisible ? "Hide" : "Timeline"}
+            </Button>
           </div>
         </div>
-        
+
         <ResponsiveContainer width="100%" height="100%">
-          <ChartComponent data={data}>
+          <ChartComponent data={displayedData}>
             <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-            <XAxis 
-              dataKey="time" 
-              tick={{ fontSize: 12 }}
-              interval="preserveStartEnd"
-            />
+            <XAxis dataKey="time" tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: 'hsl(var(--card))',
-                border: '1px solid hsl(var(--border))',
-                borderRadius: '6px'
-              }}
+            <Tooltip />
+            <DataComponent
+              type="monotone"
+              dataKey="value"
+              stroke="#2563eb"
+              fill="#2563eb"
+              fillOpacity={0.2}
+              name={paramName}
             />
-            {chartType === 'line' && (
-              <Line 
-                type="monotone" 
-                dataKey="value" 
-                stroke={parameter.color}
-                strokeWidth={2}
-                dot={false}
-              />
-            )}
-            {chartType === 'area' && (
-              <Area 
-                type="monotone" 
-                dataKey="value" 
-                stroke={parameter.color}
-                fill={parameter.color}
-                fillOpacity={0.2}
-              />
-            )}
-            {chartType === 'bar' && (
-              <Bar 
-                dataKey="value" 
-                fill={parameter.color}
-                opacity={0.8}
+            {data.length > 1 && isBrushVisible && (
+              <Brush
+                dataKey="ts"
+                height={12}
+                stroke="#2563eb"
+                travellerWidth={12}
+                onChange={(range: any) => {
+                  if (!range) return;
+                  const { startIndex, endIndex } = range as { startIndex: number; endIndex: number };
+                  setBrushRanges((prev) => ({ ...prev, [paramName]: { start: startIndex, end: endIndex } }));
+                }}
               />
             )}
           </ChartComponent>
         </ResponsiveContainer>
+        {data.length > 1 && isBrushVisible && (
+          <div className="mt-2 flex gap-2">
+            <Button
+              size="xs"
+              className="h-6 px-2 py-0 text-xs"
+              onClick={() => setBrushRanges((prev) => {
+                const copy = { ...prev };
+                delete copy[paramName];
+                return copy;
+              })}
+            >
+              Reset
+            </Button>
+          </div>
+        )}
       </div>
     );
   };
@@ -175,7 +304,7 @@ export const TelemetryCharts = ({ wellId, dateRange }: TelemetryChartsProps) => 
         <div className="flex items-center space-x-4">
           <div>
             <label className="text-sm font-medium mb-2 block">Chart Type</label>
-            <Select value={chartType} onValueChange={(value) => setChartType(value as any)}>
+            <Select value={chartType} onValueChange={(v) => setChartType(v as any)}>
               <SelectTrigger className="w-32">
                 <SelectValue />
               </SelectTrigger>
@@ -186,22 +315,19 @@ export const TelemetryCharts = ({ wellId, dateRange }: TelemetryChartsProps) => 
               </SelectContent>
             </Select>
           </div>
-          
+
           <div>
             <label className="text-sm font-medium mb-2 block">Parameters</label>
-            <div className="flex space-x-2">
-              {parameters.map((param) => (
-                <Button
-                  key={param.id}
-                  variant={selectedParameters.includes(param.id) ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleParameterToggle(param.id)}
-                  className="flex items-center gap-1"
-                >
-                  <param.icon className="h-3 w-3" />
-                  {param.name}
-                </Button>
-              ))}
+            <div className="flex space-x-2 flex-wrap">
+              {nodes.map((n) => {
+                const name = (n.tag_name || n.add_new_tag_name || "").toString();
+                if (!name) return null;
+                return (
+                  <Button key={String(n.id)} variant={selectedParameters.includes(name) ? "default" : "outline"} size="sm" onClick={() => handleParameterToggle(name)}>
+                    {name}
+                  </Button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -209,30 +335,32 @@ export const TelemetryCharts = ({ wellId, dateRange }: TelemetryChartsProps) => 
         <div className="flex items-center space-x-2">
           <Badge variant="secondary" className="bg-status-connected-bg text-status-connected">
             <Zap className="h-3 w-3 mr-1" />
-            Live Data
+            {autoRefresh ? "Auto Refresh" : "Live Data"}
           </Badge>
-          <span className="text-sm text-muted-foreground">
-            Station: {wellId.replace('-', ' ').toUpperCase()}
-          </span>
+          <span className="text-sm text-muted-foreground">Station: {wellId.replace("-", " ").toUpperCase()}</span>
         </div>
       </div>
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {selectedParameters.map((paramId) => {
-          const parameter = parameters.find(p => p.id === paramId);
-          if (!parameter) return null;
-          
-          const data = generateMockData(paramId, dateRange);
-          return renderChart(parameter, data);
-        })}
+        {nodes
+          .filter((node) => {
+            const name = (node.tag_name || node.add_new_tag_name || "").toString();
+            return visibleParameters.includes(name);
+          })
+          .map((node) => renderChart(node))}
       </div>
 
-      {selectedParameters.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
-          Select parameters above to view telemetry charts
-        </div>
+      {/* Empty states */}
+      {!selectedParameters.length && (
+        <div className="text-center py-12 text-muted-foreground">Select parameters above to view telemetry charts</div>
+      )}
+
+      {mergedTelemetry.length === 0 && (
+        <div className="text-center py-8 text-muted-foreground">No telemetry data found for <b>{wellId}</b> in the selected time range.</div>
       )}
     </div>
   );
 };
+
+export default TelemetryCharts;

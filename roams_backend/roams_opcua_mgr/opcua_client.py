@@ -168,7 +168,7 @@ class OPCUAClientHandler:
         self.connect()
         while not self.connected:
             logger.warning(f"{Fore.YELLOW}🔄 Retrying connection to {self.config.station_name}...{Style.RESET_ALL}")
-            time.sleep(10)
+            time.sleep(30)
             self.connect()
 
 
@@ -201,7 +201,7 @@ def start_opcua_clients():
 
             if not active_servers.exists():
                 logger.warning("⚠️ No active OPC UA servers found. Checking again in 60 seconds...")
-                time.sleep(60)
+                time.sleep(120)
                 continue
 
             logger.info(f"🟢 Found {active_servers.count()} active servers:")
@@ -217,7 +217,7 @@ def start_opcua_clients():
             logger.info("🔄 Next server status check in 30 seconds...")
             # ✅ START NODE READING PROCESS AFTER CONNECTIONS ARE ESTABLISHED
             start_station_monitoring()  # 🚀 Ensure node reading starts
-            time.sleep(30)  # Wait for the next check
+            time.sleep(60)  # Wait for the next check
 
     finally:
         opcua_client_lock.release()  # Release lock so another check can run

@@ -6,8 +6,11 @@ import { NodeManagementTab } from "@/components/settings/NodeManagementTab";
 import { ThresholdsTab } from "@/components/settings/ThresholdsTab";
 import { NetworkTab } from "@/components/settings/NetworkTab";
 import { AuthenticationTab } from "@/components/settings/AuthenticationTab";
+import { NotificationsTab } from "@/components/settings/NotificationsTab";
 import { TrendingUp } from "lucide-react";
 import { ThemeToggle } from "@/components/analysis/ThemeToggle";
+import { UserDisplay } from "@/components/UserDisplay";
+
 const Settings = () => {
   return (
     <SidebarProvider>
@@ -23,19 +26,23 @@ const Settings = () => {
                 <h1 className="text-xl font-bold text-foreground">ROAMS - Settings</h1>
                 <p className="text-xs text-muted-foreground">System Configuration & Management</p>
               </div>
-               <div className="flex items-center justify-center gap-2 mr-2">
-                <ThemeToggle />
-              </div>
+              
+               
+            </div>
+            <div className="flex items-center gap-3 ml-auto">
+                  <ThemeToggle />
+                  <UserDisplay />
             </div>
           </header>
 
           {/* Main Content */}
           <div className="flex-1 p-6">
             <Tabs defaultValue="opcserver" className="w-full">
-              <TabsList className="grid w-full grid-cols-5 mb-6">
+              <TabsList className="grid w-full grid-cols-6 mb-6">
                 <TabsTrigger value="opcserver">RTU Clients</TabsTrigger>
                 <TabsTrigger value="nodes">Node Management</TabsTrigger>
                 <TabsTrigger value="thresholds">Thresholds</TabsTrigger>
+                <TabsTrigger value="notifications">Notifications</TabsTrigger>
                 <TabsTrigger value="network">Network</TabsTrigger>
                 <TabsTrigger value="auth">Authentication</TabsTrigger>
               </TabsList>
@@ -51,6 +58,10 @@ const Settings = () => {
               <TabsContent value="thresholds" className="space-y-4">
                 <ThresholdsTab />
               </TabsContent>
+              
+                <TabsContent value="notifications" className="space-y-4">
+                  <NotificationsTab />
+                </TabsContent>
               
               <TabsContent value="network" className="space-y-4">
                 <NetworkTab />

@@ -61,15 +61,45 @@ class OPCUANode(models.Model):
         null=True,
         help_text="Engineering units for the tag (e.g., 'm³/h', 'm³',°C, bars etc.)."
     )
+    # Operational limits
     min_value = models.FloatField(
         blank=True,
         null=True,
-        help_text="Minimum value for the tag (numeric)"
+        help_text="Minimum acceptable value"
     )
     max_value = models.FloatField(
         blank=True,
         null=True,
-        help_text="Maximum value for the tag (numeric)"
+        help_text="Maximum acceptable value"
+    )
+    
+    # Alert thresholds (combined from TagThreshold model)
+    warning_level = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Value at which a warning is triggered"
+    )
+    critical_level = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Value at which a critical alert is triggered"
+    )
+    
+    SEVERITY_CHOICES = [
+        ("Warning", "Warning"),
+        ("Critical", "Critical"),
+    ]
+    severity = models.CharField(
+        max_length=10,
+        choices=SEVERITY_CHOICES,
+        default="Warning",
+        help_text="Default severity level for breaches"
+    )
+    
+    # Threshold control
+    threshold_active = models.BooleanField(
+        default=True,
+        help_text="Whether threshold monitoring is active for this node"
     )
     # Field for specifying the access level of the tag
     # Choices for access level
@@ -97,6 +127,11 @@ class OPCUANode(models.Model):
     
     last_value = models.CharField(blank=True, null=True)  # Changed to TextField for larger values
     last_updated = models.DateTimeField(auto_now=True)
+    is_alarm = models.BooleanField(default=False)
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     def is_active(self):
         return self.client_config.active  # Fetch 'active' from OpcUaClientConfig
@@ -112,6 +147,7 @@ class OPCUANode(models.Model):
          ]
         indexes = [
             models.Index(fields=["node_id"]),  # Index for fast lookup
+            models.Index(fields=['threshold_active', 'updated_at']),  # Index for threshold queries
         ]
 
     def __str__(self):
@@ -136,6 +172,80 @@ class TagName(models.Model):
         help_text="Engineering units (e.g., m³/h, °C, bars,m³ etc.)."
     )
    
-    
     def __str__(self):
         return self.name
+# Model for logging alarms
+class AlarmLog(models.Model):
+    node = models.ForeignKey("OPCUANode", on_delete=models.CASCADE)
+    station_name = models.CharField(max_length=100)
+    message = models.TextField()
+    severity = models.CharField(max_length=20, default="Warning")
+    timestamp = models.DateTimeField(auto_now_add=True)
+    acknowledged = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.station_name} - {self.message}"
+
+class ThresholdBreach(models.Model):
+    """
+    Event log model for recording when values breach thresholds.
+    One row per breach event - provides full audit trail of threshold violations.
+    """
+    
+    node = models.ForeignKey(
+        OPCUANode,
+        on_delete=models.CASCADE,
+        related_name="breaches",
+        help_text="The node that breached"
+    )
+    
+    # The breach details
+    value = models.FloatField(
+        help_text="The value that triggered the breach"
+    )
+    
+    LEVEL_CHOICES = [
+        ("Warning", "Warning"),
+        ("Critical", "Critical"),
+    ]
+    level = models.CharField(
+        max_length=10,
+        choices=LEVEL_CHOICES,
+        help_text="Whether this was a warning or critical breach"
+    )
+    
+    # Acknowledgement tracking
+    acknowledged = models.BooleanField(
+        default=False,
+        help_text="Whether an operator has acknowledged this breach"
+    )
+    acknowledged_by = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="Username of who acknowledged this breach"
+    )
+    acknowledged_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When this breach was acknowledged"
+    )
+    
+    # Timestamps
+    timestamp = models.DateTimeField(
+        auto_now_add=True,
+        db_index=True,
+        help_text="When the breach occurred"
+    )
+    
+    class Meta:
+        db_table = 'roams_opcua_mgr_threshold_breach'
+        indexes = [
+            models.Index(fields=['node', 'timestamp']),
+            models.Index(fields=['level', 'acknowledged', 'timestamp']),
+            models.Index(fields=['timestamp']),
+        ]
+        ordering = ['-timestamp']
+    
+    def __str__(self):
+        return f"{self.level} Breach: {self.node.tag_name} = {self.value} at {self.timestamp}"

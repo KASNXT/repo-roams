@@ -1,98 +1,181 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { StatusIndicator } from "@/components/StatusIndicator";
-import { BarChart3, Copy, Settings2 } from "lucide-react";
+import { BarChart3, Loader2, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
+import { fetchStations, type Station } from "@/services/api";
+import api from "@/services/api";
 
 interface Threshold {
-  id: string;
+  id: number;
+  node_id: number;
   parameter: string;
+  add_new_tag_name: string;
   unit: string;
-  minValue: number;
-  maxValue: number;
-  warningLevel: number;
-  criticalLevel: number;
+  min_value: number | null;
+  max_value: number | null;
+  warning_level: number | null;
+  critical_level: number | null;
   severity: "Warning" | "Critical";
-  breaches: number;
+  active: boolean;
+  breaches_24h: number;
+  breaches_critical_24h: number;
+  breaches_warning_24h: number;
+  unacknowledged_breaches: number;
 }
 
-const mockThresholds: Threshold[] = [
-  {
-    id: "1",
-    parameter: "Well Pressure",
-    unit: "psi",
-    minValue: 2000,
-    maxValue: 3500,
-    warningLevel: 3200,
-    criticalLevel: 3400,
-    severity: "Critical",
-    breaches: 3
-  },
-  {
-    id: "2",
-    parameter: "Temperature",
-    unit: "°F", 
-    minValue: 32,
-    maxValue: 200,
-    warningLevel: 180,
-    criticalLevel: 195,
-    severity: "Warning",
-    breaches: 12
-  },
-  {
-    id: "3",
-    parameter: "Flow Rate",
-    unit: "bbl/day",
-    minValue: 800,
-    maxValue: 2000,
-    warningLevel: 1800,
-    criticalLevel: 1950,
-    severity: "Warning", 
-    breaches: 1
-  },
-  {
-    id: "4",
-    parameter: "Tank Level",
-    unit: "%",
-    minValue: 10,
-    maxValue: 95,
-    warningLevel: 85,
-    criticalLevel: 90,
-    severity: "Critical",
-    breaches: 0
-  }
-];
-
 export function ThresholdsTab() {
-  const [thresholds, setThresholds] = useState<Threshold[]>(mockThresholds);
+  // Station & Threshold states
+  const [stations, setStations] = useState<Station[]>([]);
+  const [selectedStation, setSelectedStation] = useState<string>("");
+  const [loadingStations, setLoadingStations] = useState(true);
 
-  const updateThreshold = (id: string, field: string, value: number) => {
+  // Thresholds states
+  const [thresholds, setThresholds] = useState<Threshold[]>([]);
+  const [loadingThresholds, setLoadingThresholds] = useState(false);
+  const [savingChanges, setSavingChanges] = useState(false);
+  const [unsavedChanges, setUnsavedChanges] = useState<Record<number, boolean>>({});
+
+  // Load stations on mount
+  useEffect(() => {
+    const loadStations = async () => {
+      try {
+        const data = await fetchStations();
+        setStations(data);
+        if (data.length > 0 && !selectedStation) {
+          setSelectedStation(data[0].station_name);
+        }
+      } catch (error) {
+        console.error("Failed to fetch stations:", error);
+        toast.error("Unable to load stations");
+      } finally {
+        setLoadingStations(false);
+      }
+    };
+    loadStations();
+  }, []);
+
+  // Load thresholds when station changes
+  useEffect(() => {
+    if (!selectedStation) {
+      setThresholds([]);
+      return;
+    }
+
+    const loadThresholds = async () => {
+      setLoadingThresholds(true);
+      try {
+        const response = await api.get("/thresholds/", {
+          params: { station: selectedStation },
+        });
+        const responseData = response.data as Threshold[] | { results: Threshold[] };
+        const data = Array.isArray(responseData) ? responseData : responseData.results || [];
+        setThresholds(data);
+        setUnsavedChanges({});
+      } catch (error) {
+        console.error("Failed to fetch thresholds:", error);
+        toast.error("Unable to load thresholds for this station");
+      } finally {
+        setLoadingThresholds(false);
+      }
+    };
+
+    loadThresholds();
+  }, [selectedStation]);
+
+  const updateThreshold = (id: number, field: string, value: number | null) => {
     setThresholds(prev => prev.map(threshold => 
       threshold.id === id ? { ...threshold, [field]: value } : threshold
     ));
+    // Mark as having unsaved changes
+    setUnsavedChanges(prev => ({ ...prev, [id]: true }));
+  };
+
+  const saveThresholds = async () => {
+    setSavingChanges(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    try {
+      for (const threshold of thresholds) {
+        if (!unsavedChanges[threshold.id]) continue; // Skip unchanged items
+
+        try {
+          await api.patch(`/thresholds/${threshold.id}/`, {
+            min_value: threshold.min_value,
+            max_value: threshold.max_value,
+            warning_level: threshold.warning_level,
+            critical_level: threshold.critical_level,
+            severity: threshold.severity,
+            active: threshold.active,
+          });
+          successCount++;
+        } catch (error) {
+          console.error(`Failed to save threshold ${threshold.id}:`, error);
+          errorCount++;
+        }
+      }
+
+      if (errorCount === 0) {
+        toast.success(`✅ All ${successCount} thresholds saved successfully!`);
+        setUnsavedChanges({});
+      } else {
+        toast.warning(`Saved ${successCount}, but ${errorCount} failed`);
+      }
+    } catch (error) {
+      console.error("Failed to save thresholds:", error);
+      toast.error("Failed to save thresholds");
+    } finally {
+      setSavingChanges(false);
+    }
   };
 
   return (
     <div className="space-y-6">
+      {/* Station Selector */}
+      <Card className="shadow-card">
+        <CardHeader>
+          <CardTitle className="text-base font-medium">Select Station</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4">
+            <Select value={selectedStation} onValueChange={setSelectedStation}>
+              <SelectTrigger className="w-64">
+                <SelectValue placeholder="Choose a station..." />
+              </SelectTrigger>
+              <SelectContent>
+                {stations.map((station) => (
+                  <SelectItem key={station.id} value={station.station_name}>
+                    {station.station_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {loadingStations && <Loader2 className="h-4 w-4 animate-spin" />}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Action Bar */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-medium">Device Thresholds</h3>
+          <h3 className="text-lg font-medium">Threshold Configuration</h3>
           <p className="text-sm text-muted-foreground">
-            Configure monitoring limits and alert conditions
+            Set warning and critical levels for parameters (stored in backend)
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Copy className="h-4 w-4 mr-2" />
-            Apply to Group
-          </Button>
-          <Button variant="outline" size="sm">
-            <Settings2 className="h-4 w-4 mr-2" />
-            Bulk Configure
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={saveThresholds}
+            disabled={savingChanges || loadingThresholds || thresholds.length === 0 || Object.keys(unsavedChanges).length === 0}
+          >
+            {savingChanges && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            Save Changes ({Object.keys(unsavedChanges).length})
           </Button>
         </div>
       </div>
@@ -100,126 +183,149 @@ export function ThresholdsTab() {
       {/* Thresholds Table */}
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle className="text-base font-medium">Parameter Limits</CardTitle>
+          <CardTitle className="text-base font-medium">Parameter Thresholds</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Parameter</TableHead>
-                <TableHead>Min Value</TableHead>
-                <TableHead>Max Value</TableHead>
-                <TableHead>Warning</TableHead>
-                <TableHead>Critical</TableHead>
-                <TableHead>Severity</TableHead>
-                <TableHead>Breaches</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {thresholds.map((threshold) => (
-                <TableRow key={threshold.id} className="hover:bg-muted/50">
-                  <TableCell className="font-medium">
-                    <div>
-                      {threshold.parameter}
-                      <div className="text-xs text-muted-foreground">({threshold.unit})</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      value={threshold.minValue}
-                      onChange={(e) => updateThreshold(threshold.id, 'minValue', parseFloat(e.target.value))}
-                      className="w-20 text-xs"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      value={threshold.maxValue}
-                      onChange={(e) => updateThreshold(threshold.id, 'maxValue', parseFloat(e.target.value))}
-                      className="w-20 text-xs"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      value={threshold.warningLevel}
-                      onChange={(e) => updateThreshold(threshold.id, 'warningLevel', parseFloat(e.target.value))}
-                      className="w-20 text-xs"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      value={threshold.criticalLevel}
-                      onChange={(e) => updateThreshold(threshold.id, 'criticalLevel', parseFloat(e.target.value))}
-                      className="w-20 text-xs"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Select defaultValue={threshold.severity}>
-                      <SelectTrigger className="w-24 text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Warning">Warning</SelectItem>
-                        <SelectItem value="Critical">Critical</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-medium text-sm">{threshold.breaches}</span>
-                      {threshold.breaches > 0 && (
-                        <StatusIndicator 
-                          status={threshold.breaches > 5 ? "disconnected" : "warning"} 
-                          label={threshold.breaches > 5 ? "High" : "Low"}
+          {loadingThresholds ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mr-2" />
+              <span className="text-muted-foreground">Loading thresholds...</span>
+            </div>
+          ) : thresholds.length === 0 ? (
+            <div className="text-center py-8">
+              <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+              <p className="text-muted-foreground">
+                {selectedStation ? "No thresholds configured for this station" : "Select a station to view thresholds"}
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Parameter</TableHead>
+                    <TableHead>Min</TableHead>
+                    <TableHead>Max</TableHead>
+                    <TableHead>Warning</TableHead>
+                    <TableHead>Critical</TableHead>
+                    <TableHead>Severity</TableHead>
+                    <TableHead>Breaches (24h)</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {thresholds.map((threshold) => (
+                    <TableRow 
+                      key={threshold.id} 
+                      className={`hover:bg-muted/50 ${unsavedChanges[threshold.id] ? 'bg-yellow-50 dark:bg-yellow-950' : ''}`}
+                    >
+                      <TableCell className="font-medium">
+                        <div>
+                          {threshold.parameter || threshold.add_new_tag_name || "Unnamed"}
+                          <div className="text-xs text-muted-foreground">({threshold.unit || "N/A"})</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={threshold.min_value ?? ""}
+                          onChange={(e) => updateThreshold(threshold.id, 'min_value', e.target.value ? parseFloat(e.target.value) : null)}
+                          className="w-20 text-xs"
+                          placeholder="--"
                         />
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm">
-                      <BarChart3 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={threshold.max_value ?? ""}
+                          onChange={(e) => updateThreshold(threshold.id, 'max_value', e.target.value ? parseFloat(e.target.value) : null)}
+                          className="w-20 text-xs"
+                          placeholder="--"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={threshold.warning_level ?? ""}
+                          onChange={(e) => updateThreshold(threshold.id, 'warning_level', e.target.value ? parseFloat(e.target.value) : null)}
+                          className="w-20 text-xs"
+                          placeholder="--"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={threshold.critical_level ?? ""}
+                          onChange={(e) => updateThreshold(threshold.id, 'critical_level', e.target.value ? parseFloat(e.target.value) : null)}
+                          className="w-20 text-xs"
+                          placeholder="--"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Select value={threshold.severity} onValueChange={(value) => updateThreshold(threshold.id, 'severity', value as any)}>
+                          <SelectTrigger className="w-24 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Warning">Warning</SelectItem>
+                            <SelectItem value="Critical">Critical</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          <div className="font-semibold">{threshold.breaches_24h}</div>
+                          <div className="text-xs text-red-600">🔴 {threshold.breaches_critical_24h}</div>
+                          <div className="text-xs text-yellow-600">🟡 {threshold.breaches_warning_24h}</div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="shadow-card">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary mb-2">24</div>
-              <div className="text-sm text-muted-foreground">Total Parameters</div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="shadow-card">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-status-warning mb-2">16</div>
-              <div className="text-sm text-muted-foreground">Warning Breaches (24h)</div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="shadow-card">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-destructive mb-2">3</div>
-              <div className="text-sm text-muted-foreground">Critical Breaches (24h)</div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Statistics Cards */}
+      {selectedStation && thresholds.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="shadow-card">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary mb-2">{thresholds.length}</div>
+                <div className="text-sm text-muted-foreground">Total Parameters</div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="shadow-card">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-destructive mb-2">
+                  {thresholds.reduce((sum, t) => sum + t.breaches_critical_24h, 0)}
+                </div>
+                <div className="text-sm text-muted-foreground">Critical Breaches (24h)</div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="shadow-card">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-status-warning mb-2">
+                  {thresholds.reduce((sum, t) => sum + t.unacknowledged_breaches, 0)}
+                </div>
+                <div className="text-sm text-muted-foreground">Unacknowledged Alerts</div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

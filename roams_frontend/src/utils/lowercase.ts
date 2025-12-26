@@ -1,7 +1,6 @@
 // roams_frontend/src/utils/lowercase.ts
 // Utility to normalize parameter names for consistent key lookup
-export const normalizeKey = (key: string): string => {
-  return key
-    .toLowerCase()         // make everything lowercase
-    .replace(/\s+/g, "");  // remove all spaces
+export const normalizeKey = (key: any) => {
+  if (!key) return "";       // handle undefined/null
+  return String(key).replace(/\s+/g, "_").toLowerCase();
 };

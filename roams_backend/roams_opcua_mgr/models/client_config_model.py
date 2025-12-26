@@ -21,6 +21,19 @@ class OpcUaClientConfig(models.Model):
         help_text="Name of the station."
     )
 
+    # 🗺️ Geographic coordinates for mapping
+    latitude = models.FloatField(
+        validators=[MinValueValidator(-90), MaxValueValidator(90)],
+        null=True, blank=True,
+        help_text="Latitude of the station."
+    )
+
+    longitude = models.FloatField(
+        validators=[MinValueValidator(-180), MaxValueValidator(180)],
+        null=True, blank=True,
+        help_text="Longitude of the station."
+    )
+    # OPC UA Endpoint URL
     endpoint_url = models.CharField(
         max_length=2048,
         validators=[validate_opcua_url],  
@@ -56,8 +69,7 @@ class OpcUaClientConfig(models.Model):
         choices=CONNECTION_STATUS_CHOICES,
         default="Disconnected"
     )
-    connection_status = models.CharField(max_length=20, choices=CONNECTION_STATUS_CHOICES, default="Disconnected")
-    
+       
     # Security policies
     SECURITY_POLICY_CHOICES = [
         ("None", "None"),
@@ -144,7 +156,7 @@ class OpcUaClientConfig(models.Model):
         
         """Retrieve the active OPC UA client instance for this configuration."""
         active_servers = OpcUaClientConfig.objects.filter(active=True)
-        return active_servers.get(self.station_name)  # ✅ Returns the connected client
+        return OpcUaClientConfig.objects.filter(active=True, station_name=self.station_name).first()  # ✅ Returns the connected client
 
     def clean(self):
         """
@@ -187,4 +199,13 @@ class OpcUaClientConfig(models.Model):
             raise ValueError("Duplicate station name is not allowed.")
         super().save(*args, **kwargs)
 
-   
+class ConnectionLog(models.Model):
+    station = models.ForeignKey(OpcUaClientConfig, on_delete=models.CASCADE)
+    status = models.CharField(
+        max_length=10,
+        choices=[('online', 'Online'), ('offline', 'Offline')]
+    )
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.station.station_name} - {self.status} at {self.timestamp}"

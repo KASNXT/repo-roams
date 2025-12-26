@@ -11,10 +11,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-from decouple import config
 import os
-import environ
 from logging.handlers import RotatingFileHandler
+import environ
+
 
 
 
@@ -56,9 +56,10 @@ INSTALLED_APPS = [
 
  
       
-CORS_ALLOW_ALL_ORIGINS = False  # default
+CORS_ALLOW_ALL_ORIGINS = False  # default is False, be explicit Better security practice in production
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # React dev server
+    "http://localhost:5173",
+      'http://127.0.0.1:5173',  # React dev server
 ]
 
 MIDDLEWARE = [
@@ -301,3 +302,26 @@ LOGGING["root"]["level"] = "DEBUG" if DEBUG else "INFO"
 LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/"  # After login, go to the dashboard
 LOGOUT_REDIRECT_URL = "/login/"  # After logout, redirect to login page
+# ==================== THRESHOLD & ALERT CONFIGURATION ====================
+
+# Email notifications for threshold breaches
+THRESHOLD_EMAIL_ENABLED = env.bool('THRESHOLD_EMAIL_ENABLED', default=True)
+THRESHOLD_EMAIL_FROM = env('THRESHOLD_EMAIL_FROM', default='alerts@roams.local')
+THRESHOLD_CRITICAL_EMAILS = env.list('THRESHOLD_CRITICAL_EMAILS', default=[])
+THRESHOLD_WARNING_EMAILS = env.list('THRESHOLD_WARNING_EMAILS', default=[])
+
+# Email backend configuration
+EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = env('EMAIL_HOST', default='localhost')
+EMAIL_PORT = env.int('EMAIL_PORT', default=587)
+EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+
+# SMS notifications via Twilio
+THRESHOLD_SMS_ENABLED = env.bool('THRESHOLD_SMS_ENABLED', default=False)
+TWILIO_ACCOUNT_SID = env('TWILIO_ACCOUNT_SID', default=None)
+TWILIO_AUTH_TOKEN = env('TWILIO_AUTH_TOKEN', default=None)
+TWILIO_PHONE_FROM = env('TWILIO_PHONE_FROM', default=None)
+THRESHOLD_CRITICAL_PHONES = env.list('THRESHOLD_CRITICAL_PHONES', default=[])
+THRESHOLD_WARNING_PHONES = env.list('THRESHOLD_WARNING_PHONES', default=[])
