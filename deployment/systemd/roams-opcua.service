@@ -1,0 +1,35 @@
+[Unit]
+Description=ROAMS OPC UA Background Worker (Station Polling Service)
+After=network.target roams-django.service
+Requires=roams-django.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/roams/roams_backend
+Environment="PATH=/opt/roams/venv_new/bin"
+Environment="DJANGO_SETTINGS_MODULE=roams_pro.settings"
+
+# Start OPC UA background threads
+# Note: This assumes you create a management command for this
+# Alternative: Django runs OPC UA threads automatically in apps.py::ready()
+ExecStart=/opt/roams/venv_new/bin/python manage.py runserver 0.0.0.0:8001 --nothreading --noreload
+
+# Restart behavior
+Restart=always
+RestartSec=10
+StartLimitInterval=0
+
+# Logging
+StandardOutput=append:/var/log/roams/opcua-service.log
+StandardError=append:/var/log/roams/opcua-error.log
+
+# Security hardening
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/roams/roams_backend/logs
+
+[Install]
+WantedBy=multi-user.target

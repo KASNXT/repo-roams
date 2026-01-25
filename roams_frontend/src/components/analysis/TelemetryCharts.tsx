@@ -75,40 +75,43 @@ export const TelemetryCharts = ({
   const { tagUnits } = useTagUnits();
   const [brushRanges, setBrushRanges] = useState<Record<string, { start?: number; end?: number }>>({});
   const [showBrushs, setShowBrushs] = useState<Record<string, boolean>>({});
-  // Make the brush look like a transparent glass tube with rounded knobs,
-  // matching the area chart color (#2563eb) with transparency.
+  // Make the brush look like a modern glass tube with curved edges and smooth knobs
   useEffect(() => {
     const styleBrush = () => {
       const groups = document.querySelectorAll('.recharts-brush');
       groups.forEach((g) => {
-        // Style the brush background rect
+        // Style the brush background rect with modern curved edges
         const bgRects = (g as Element).querySelectorAll('rect[y="0"]');
         bgRects.forEach((r) => {
-          const height = parseFloat(r.getAttribute('height') || '12');
+          const height = parseFloat(r.getAttribute('height') || '16');
           const rx = height / 2;
+          // Modern gradient and blur effect
           r.setAttribute('rx', String(rx));
           r.setAttribute('ry', String(rx));
-          r.setAttribute('fill', 'rgba(37, 99, 235, 0.15)');
-          r.setAttribute('stroke', 'rgba(37, 99, 235, 0.4)');
-          r.setAttribute('stroke-width', '1.5');
+          r.setAttribute('fill', 'rgba(37, 99, 235, 0.12)');
+          r.setAttribute('stroke', 'rgba(37, 99, 235, 0.35)');
+          r.setAttribute('stroke-width', '1');
+          r.setAttribute('filter', 'drop-shadow(0 1px 2px rgba(37, 99, 235, 0.1))');
         });
 
-        // Style the traveller knobs (circles or paths)
+        // Style the traveller knobs with modern rounded design
         const travellers = (g as Element).querySelectorAll('circle');
         travellers.forEach((c) => {
-          c.setAttribute('fill', 'rgba(37, 99, 235, 0.8)');
+          c.setAttribute('fill', 'rgba(37, 99, 235, 0.95)');
           c.setAttribute('stroke', 'rgba(37, 99, 235, 1)');
           c.setAttribute('stroke-width', '2');
-          c.setAttribute('r', '6');
+          c.setAttribute('r', '7');
+          c.setAttribute('filter', 'drop-shadow(0 2px 4px rgba(37, 99, 235, 0.3))');
         });
 
         // Also style any path elements that might be travellers
         const paths = (g as Element).querySelectorAll('path');
         paths.forEach((p) => {
           if (p.getAttribute('d')) {
-            p.setAttribute('fill', 'rgba(37, 99, 235, 0.8)');
+            p.setAttribute('fill', 'rgba(37, 99, 235, 0.9)');
             p.setAttribute('stroke', 'rgba(37, 99, 235, 1)');
-            p.setAttribute('stroke-width', '1.5');
+            p.setAttribute('stroke-width', '1');
+            p.setAttribute('filter', 'drop-shadow(0 2px 4px rgba(37, 99, 235, 0.2))');
           }
         });
       });
@@ -234,7 +237,7 @@ export const TelemetryCharts = ({
     const isBrushVisible = !!showBrushs[paramName];
 
     return (
-      <div key={String(node.id)} className={`h-64 ${isBrushVisible ? "mb-8" : "mb-2"}`}>
+      <div key={String(node.id)} className={`h-64 ${isBrushVisible ? "mb-12" : "mb-6"}`}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Icon className="h-5 w-5 text-primary" />
@@ -266,9 +269,9 @@ export const TelemetryCharts = ({
             {data.length > 1 && isBrushVisible && (
               <Brush
                 dataKey="ts"
-                height={12}
+                height={16}
                 stroke="#2563eb"
-                travellerWidth={12}
+                travellerWidth={14}
                 onChange={(range: any) => {
                   if (!range) return;
                   const { startIndex, endIndex } = range as { startIndex: number; endIndex: number };
@@ -278,19 +281,22 @@ export const TelemetryCharts = ({
             )}
           </ChartComponent>
         </ResponsiveContainer>
+        
         {data.length > 1 && isBrushVisible && (
-          <div className="mt-2 flex gap-2">
+          <div className="mt-1 flex items-center gap-2 px-1">
             <Button
               size="xs"
-              className="h-6 px-2 py-0 text-xs"
+              variant="outline"
+              className="h-7 px-2 py-0 text-xs hover:bg-destructive hover:text-white transition-colors"
               onClick={() => setBrushRanges((prev) => {
                 const copy = { ...prev };
                 delete copy[paramName];
                 return copy;
               })}
             >
-              Reset
+              ↺ Reset
             </Button>
+            <span className="text-xs text-muted-foreground ml-auto">Drag to zoom • Click Reset to restore</span>
           </div>
         )}
       </div>
@@ -342,7 +348,7 @@ export const TelemetryCharts = ({
       </div>
 
       {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
         {nodes
           .filter((node) => {
             const name = (node.tag_name || node.add_new_tag_name || "").toString();

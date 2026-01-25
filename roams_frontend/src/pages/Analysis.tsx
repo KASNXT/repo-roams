@@ -16,8 +16,8 @@ import { toast } from "sonner";
 
 import { useTagUnits } from "@/hooks/useTagUnits";
 import { normalizeKey } from "@/utils/lowercase";
-import { fetchStations, fetchNodes, type Node, type Station } from "@/services/api";
-import axios from "axios";
+import { fetchStations, fetchNodes, fetchBreaches, type Node, type Station, type ThresholdBreach } from "@/services/api";
+import api from "@/services/api";
 
 const Analysis = () => {
   // --- States ---
@@ -41,6 +41,9 @@ const Analysis = () => {
   // --- History Data (telemetry logs for selected range) ---
   const [historyData, setHistoryData] = useState<any[]>([]);
 
+  // --- Alarms Data (real threshold breaches from backend) ---
+  const [alarms, setAlarms] = useState<ThresholdBreach[]>([]);
+
   // --- Tag Units ---
   const { tagUnits } = useTagUnits();
   const getParameterUnit = (param: string) => {
@@ -48,28 +51,11 @@ const Analysis = () => {
     return tagUnits[key] || "";
   };
 
-  // Helper: fetch history from backend using axios (includes auth token)
+  // Helper: fetch history from backend using centralized api client (includes auth token)
   const fetchHistory = async (station: string, from: Date, to: Date) => {
     try {
       const fromStr = from.toISOString();
       const toStr = to.toISOString();
-
-      const api = axios.create({
-        baseURL: "http://localhost:8000/api",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      // Attach token automatically
-      api.interceptors.request.use((config) => {
-        const token = localStorage.getItem("token");
-        if (token) {
-          config.headers = config.headers ?? {};
-          (config.headers as Record<string, string>).Authorization = `Token ${token}`;
-        }
-        return config;
-      });
 
       const res = await api.get("/telemetry/", {
         params: {
@@ -91,7 +77,15 @@ const Analysis = () => {
       try {
         const data = await fetchStations();
         setStations(data);
-        if (data.length > 0 && !selectedWell) setSelectedWell(data[0].station_name);
+        
+        // Try to restore selectedWell from localStorage
+        const savedWell = localStorage.getItem("selectedWell");
+        if (savedWell && data.some(s => s.station_name === savedWell)) {
+          setSelectedWell(savedWell);
+        } else if (data.length > 0 && !selectedWell) {
+          // If no saved preference, select first station
+          setSelectedWell(data[0].station_name);
+        }
       } catch (error) {
         console.error("Failed to fetch stations:", error);
         toast.error("Unable to load stations from backend");
@@ -102,6 +96,13 @@ const Analysis = () => {
     loadStations();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // run once
+
+  // --- Persist selectedWell to localStorage whenever it changes ---
+  useEffect(() => {
+    if (selectedWell) {
+      localStorage.setItem("selectedWell", selectedWell);
+    }
+  }, [selectedWell]);
 
   // --- Load nodes whenever selectedWell changes (or when auto refresh triggers below) ---
   const loadNodes = useCallback(async () => {
@@ -162,6 +163,33 @@ const Analysis = () => {
     };
   }, [selectedWell, dateRange, autoRefresh]);
 
+  // --- Load alarms whenever station or dateRange changes ---
+  useEffect(() => {
+    if (!selectedWell || !dateRange?.from || !dateRange?.to) {
+      setAlarms([]);
+      return;
+    }
+
+    let canceled = false;
+    const loadAlarms = async () => {
+      const breaches = await fetchAlarms(dateRange.from, dateRange.to);
+      if (!canceled) setAlarms(Array.isArray(breaches) ? breaches : []);
+    };
+
+    loadAlarms();
+
+    if (autoRefresh) {
+      const interval = setInterval(loadAlarms, 15000);
+      return () => {
+        canceled = true;
+        clearInterval(interval);
+      };
+    }
+
+    return () => {
+      canceled = true;
+    };
+  }, [selectedWell, dateRange, autoRefresh]);
 
   useEffect(() => {
   console.log("📊 History data count:", historyData.length);
@@ -239,19 +267,11 @@ const Analysis = () => {
       csvContent += `${row.station},${safeParam},${row.date},${row.time},${row.value},${safeUnit}\n`;
     });
 
-    // Alarms (mock for now)
-    const allAlarms = generateMockAlarms(selectedWell);
-    const filteredAlarms = allAlarms.filter((alarm) => {
-      if (!dateRange?.from || !dateRange?.to) return true;
-      const alarmDate = new Date(alarm.dateTime);
-      return alarmDate >= dateRange.from! && alarmDate <= dateRange.to!;
-    });
-
     csvContent += "\n\nALARMS DATA\n";
-    csvContent += "Date/Time,Type,Description,Status,Severity,Acknowledged By\n";
-    filteredAlarms.forEach((alarm) => {
-      const description = alarm.description.replace(/,/g, ";");
-      csvContent += `${alarm.dateTime},${alarm.type},${description},${alarm.status},${alarm.severity},${alarm.acknowledgedBy || "N/A"}\n`;
+    csvContent += "Date/Time,Node,Breach Type,Breach Value,Status\n";
+    alarms.forEach((alarm) => {
+      const nodeName = String(alarm.node_name || "Unknown").replace(/,/g, ";");
+      csvContent += `${alarm.timestamp},${nodeName},${alarm.breach_type || "N/A"},${alarm.breach_value || "N/A"},${alarm.acknowledged ? "Acknowledged" : "Pending"}\n`;
     });
 
     const encodedUri = encodeURI(csvContent);
@@ -266,30 +286,32 @@ const Analysis = () => {
     toast.success(`Exported data for ${selectedWell} (${dateString})`);
   };
 
-  const generateMockAlarms = (wellId: string) => {
-    const alarmTypes = ["High Pressure", "Low Flow", "Temperature Alert", "Power Fluctuation", "Communication Error", "Maintenance Due"];
-    const severities = ["Critical", "High", "Medium", "Low"];
-    const statuses = ["Active", "Acknowledged", "Resolved"];
+  // Helper: fetch alarms (threshold breaches) from backend
+  const fetchAlarms = async (from?: Date, to?: Date) => {
+    try {
+      console.log("📡 Fetching alarms from backend...");
+      
+      const allBreaches = await fetchBreaches();
+      console.log(`✅ Fetched ${allBreaches.length} total breaches`);
 
-    return Array.from({ length: 25 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - Math.floor(Math.random() * 30));
-      date.setHours(Math.floor(Math.random() * 24), Math.floor(Math.random() * 60));
+      // Filter by date range if provided
+      let filtered = allBreaches;
+      if (from && to) {
+        filtered = allBreaches.filter((breach) => {
+          const breachDate = new Date(breach.timestamp);
+          return breachDate >= from && breachDate <= to;
+        });
+        console.log(`📊 Filtered to ${filtered.length} breaches in date range`);
+      }
 
-      const type = alarmTypes[Math.floor(Math.random() * alarmTypes.length)];
-      const severity = severities[Math.floor(Math.random() * severities.length)];
-      const status = statuses[Math.floor(Math.random() * statuses.length)];
-
-      return {
-        id: `alarm-${i + 1}`,
-        dateTime: date.toLocaleString(),
-        type,
-        description: `${type} detected on ${wellId.replace("-", " ")} - requires attention`,
-        status,
-        severity,
-        acknowledgedBy: status !== "Active" ? `Operator ${Math.floor(Math.random() * 5) + 1}` : undefined,
-      };
-    });
+      setAlarms(filtered);
+      return filtered;
+    } catch (error) {
+      console.error("❌ Error fetching alarms:", error);
+      toast.error("Failed to load alarms from backend");
+      setAlarms([]);
+      return [];
+    }
   };
 
   return (
@@ -298,20 +320,24 @@ const Analysis = () => {
         <AppSidebar />
         <SidebarInset className="flex-1">
           {/* Header */}
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-gradient-surface px-4">
-            <SidebarTrigger className="-ml-1" />
+          <header className="flex flex-col md:flex-row md:h-16 shrink-0 gap-2 border-b bg-gradient-surface px-4 py-2 md:py-0">
             <div className="flex items-center gap-2 flex-1">
+              <SidebarTrigger className="-ml-1" />
               <TrendingUp className="h-6 w-6 text-primary" />
-              <div>
-                <h1 className="text-xl font-bold text-foreground">Borehole Performance Analysis</h1>
-                <p className="text-xs text-muted-foreground">Telemetry Data & System Insights</p>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-lg md:text-xl font-bold text-foreground truncate">Borehole Analysis</h1>
+                <p className="text-xs text-muted-foreground hidden md:block">Telemetry Data & System Insights</p>
+              </div>
+              <div className="flex md:hidden items-center gap-2">
+                <ThemeToggle />
+                <UserDisplay />
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2 md:gap-3">
               {/* Station Selector */}
               <Select value={selectedWell} onValueChange={setSelectedWell} disabled={loadingStations || stations.length === 0}>
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-full md:w-48">
                   <SelectValue placeholder={loadingStations ? "Loading..." : "Select Station"} />
                 </SelectTrigger>
                 <SelectContent>
@@ -325,30 +351,32 @@ const Analysis = () => {
 
               <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />
 
-              <Button variant={autoRefresh ? "default" : "outline"} size="sm" onClick={() => setAutoRefresh(!autoRefresh)}>
-                <RefreshCw className={`h-4 w-4 mr-2 ${autoRefresh ? "animate-spin" : ""}`} />
-                Auto Refresh
+              <Button variant={autoRefresh ? "default" : "outline"} size="sm" onClick={() => setAutoRefresh(!autoRefresh)} className="flex-1 md:flex-initial">
+                <RefreshCw className={`h-4 w-4 md:mr-2 ${autoRefresh ? "animate-spin" : ""}`} />
+                <span className="hidden md:inline">Auto Refresh</span>
               </Button>
 
-              <Button variant="outline" size="sm" onClick={handleExport} disabled={loadingStations || loadingNodes}>
-                <Download className="h-4 w-4 mr-2" />
-                Export
+              <Button variant="outline" size="sm" onClick={handleExport} disabled={loadingStations || loadingNodes} className="flex-1 md:flex-initial">
+                <Download className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">Export</span>
               </Button>
 
-              <ThemeToggle />
-              <UserDisplay />
+              <div className="hidden md:flex items-center gap-3">
+                <ThemeToggle />
+                <UserDisplay />
+              </div>
             </div>
           </header>
 
           {/* Search + Filter Bar */}
-          <div className="flex items-center justify-between p-4 border-b bg-muted/30">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2 p-4 border-b bg-muted/30">
+            <div className="flex items-center gap-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search telemetry or alarms..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-64" />
+              <Input placeholder="Search telemetry or alarms..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="flex-1 md:w-64" />
             </div>
 
             <Select value={alarmFilter} onValueChange={setAlarmFilter}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-full md:w-40">
                 <SelectValue placeholder="Filter Alarms" />
               </SelectTrigger>
               <SelectContent>
@@ -361,7 +389,7 @@ const Analysis = () => {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 p-6 space-y-6">
+          <div className="flex-1 p-2 md:p-6 space-y-4 md:space-y-6">
             {!selectedWell ? (
               <div className="text-center text-muted-foreground p-8">No station selected or available.</div>
             ) : (

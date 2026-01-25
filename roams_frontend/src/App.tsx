@@ -15,6 +15,7 @@ import Notifications from "./pages/Notifications";
 import Overview from "./pages/Overview";
 import NotFound from "./pages/NotFound";
 import Control from "./pages/control";
+import StationMapFullPage from "./pages/StationMapFullPage";
 import {useAuth } from "@/hooks/useAuth";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => {
         attribute="class"
         defaultTheme="light"
         enableSystem
+        storageKey="roams_theme_preference"
         disableTransitionOnChange
       >
         <TooltipProvider>
@@ -90,6 +92,14 @@ const App = () => {
                 element={
                   <PrivateRoute>
                     <Control />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/map"
+                element={
+                  <PrivateRoute>
+                    <StationMapFullPage />
                   </PrivateRoute>
                 }
               />

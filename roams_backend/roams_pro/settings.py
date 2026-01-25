@@ -38,9 +38,6 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    'roams_api',
-    "roams_opcua_mgr",
-    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -51,7 +48,9 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',  # for TokenAuth
     'django_filters',
     'corsheaders',
-      
+    'channels',
+    'roams_api',
+    "roams_opcua_mgr",
 ]
 
  
@@ -59,7 +58,25 @@ INSTALLED_APPS = [
 CORS_ALLOW_ALL_ORIGINS = False  # default is False, be explicit Better security practice in production
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-      'http://127.0.0.1:5173',  # React dev server
+    'http://127.0.0.1:5173',  # React dev server
+    'http://192.168.183.232:5173',  # WSL network access
+    'http://192.168.183.232:8000',  # Direct backend access on WSL
+    'http://192.168.1.100:5173',  # Windows Wi-Fi IP for phone access
+    'http://192.168.1.100:8000',  # Windows backend access
+]
+
+# Allow credentials for CORS (if needed for cookies/sessions)
+CORS_ALLOW_CREDENTIALS = False  # Set to True only if using session auth
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
 ]
 
 MIDDLEWARE = [
@@ -71,7 +88,27 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'roams_pro.middleware.AdminTimeoutMiddleware',  # Add timeout management for admin
 ]
+
+# ==================== PRODUCTION SECURITY SETTINGS ====================
+# SSL/HTTPS configuration (only enforced when DEBUG=False)
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True  # Redirect all HTTP to HTTPS
+    SESSION_COOKIE_SECURE = True  # Send session cookies only over HTTPS
+    CSRF_COOKIE_SECURE = True  # Send CSRF cookies only over HTTPS
+    SECURE_HSTS_SECONDS = 31536000  # 1 year HSTS (HTTP Strict Transport Security)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  # Trust NGINX proxy
+    SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent MIME type sniffing
+    X_FRAME_OPTIONS = 'DENY'  # Prevent clickjacking
+
+# Session security
+SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
+SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
+CSRF_COOKIE_HTTPONLY = True  # Prevent JavaScript access to CSRF token
+CSRF_COOKIE_SAMESITE = 'Lax'
 
 ROOT_URLCONF = 'roams_pro.urls'
 
@@ -96,7 +133,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'roams_pro.wsgi.application'
 ASGI_APPLICATION = 'roams_pro.asgi.application'
-CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8000", "http://localhost:5173"]
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:8000", 
+    "http://localhost:5173", 
+    "http://127.0.0.1:5173",
+    "http://192.168.183.232:5173",  # Local network frontend
+    "http://192.168.183.232:8000",  # Local network backend
+    'http://192.168.1.100:5173',  # Windows Wi-Fi IP for phone access
+    'http://192.168.1.100:8000',  # Windows backend access
+]
 
 
 
@@ -104,20 +149,22 @@ CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8000", "http://localhost:5173"]
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 
-SECRET_KEY = env("SECRET_KEY", default="fallback-secret-key")
+SECRET_KEY = env.str("SECRET_KEY", default="fallback-secret-key")
 
 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": env("DB_NAME"),
-        "USER": env("DB_USER"),
-        "PASSWORD": env("DB_PASSWORD"),
-        "HOST": env("DB_HOST", default="127.0.0.1"),
-        "PORT": env("DB_PORT", default="5432"),
-        'CONN_MAX_AGE': 0,  # ✅ close connection after each request
+        "NAME": env.str("DB_NAME", default="roams_db"),
+        "USER": env.str("DB_USER", default="postgres"),
+        "PASSWORD": env.str("DB_PASSWORD", default="password"),
+        "HOST": env.str("DB_HOST", default="127.0.0.1"),
+        "PORT": env.str("DB_PORT", default="5432"),
+        'CONN_MAX_AGE': 600,  # 10-minute connection pooling (0 = no pooling, not recommended for production)
         "OPTIONS": {
             "connect_timeout": 30,
+            # Increase statement timeout significantly (30 minutes) to prevent admin operations from timing out
+            "options": "-c statement_timeout=1800000 -c lock_timeout=300000",
         }
     }
 }
@@ -127,8 +174,13 @@ DATABASES = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": env("REDIS_URL", default="redis://127.0.0.1:6379/0"),
-        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+        "LOCATION": env.str("REDIS_URL", default="redis://127.0.0.1:6379/0"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "CONNECTION_POOL_KWARGS": {"max_connections": 50},
+        },
+        "KEY_PREFIX": "roams",  # Namespace for cache keys
+        "TIMEOUT": 300,  # Default cache timeout: 5 minutes
     }
 }
 
@@ -136,8 +188,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],  # Ensure Redis is running
-            
+            "hosts": [("127.0.0.1", 6379)],
         },
     },
 }
@@ -162,6 +213,17 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 100,
 }
+
+# API Rate Limiting (only in production to prevent abuse)
+if not DEBUG:
+    REST_FRAMEWORK['DEFAULT_THROTTLE_CLASSES'] = [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ]
+    REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'] = {
+        'anon': '100/hour',  # Unauthenticated requests
+        'user': '1000/hour',  # Authenticated requests
+    }
 
 
 # Password validation
@@ -235,7 +297,7 @@ LOGGING = {
     },
     "handlers": {
         "console": {
-            "level": "WARNING",
+            "level": "INFO" if DEBUG else "WARNING",
             "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
@@ -306,22 +368,28 @@ LOGOUT_REDIRECT_URL = "/login/"  # After logout, redirect to login page
 
 # Email notifications for threshold breaches
 THRESHOLD_EMAIL_ENABLED = env.bool('THRESHOLD_EMAIL_ENABLED', default=True)
-THRESHOLD_EMAIL_FROM = env('THRESHOLD_EMAIL_FROM', default='alerts@roams.local')
+THRESHOLD_EMAIL_FROM = env.str('THRESHOLD_EMAIL_FROM', default='alerts@roams.local')
 THRESHOLD_CRITICAL_EMAILS = env.list('THRESHOLD_CRITICAL_EMAILS', default=[])
 THRESHOLD_WARNING_EMAILS = env.list('THRESHOLD_WARNING_EMAILS', default=[])
 
 # Email backend configuration
-EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = env('EMAIL_HOST', default='localhost')
+EMAIL_BACKEND = env.str('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = env.str('EMAIL_HOST', default='localhost')
 EMAIL_PORT = env.int('EMAIL_PORT', default=587)
 EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
-EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+EMAIL_HOST_USER = env.str('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = env.str('EMAIL_HOST_PASSWORD', default='')
 
 # SMS notifications via Twilio
-THRESHOLD_SMS_ENABLED = env.bool('THRESHOLD_SMS_ENABLED', default=False)
-TWILIO_ACCOUNT_SID = env('TWILIO_ACCOUNT_SID', default=None)
-TWILIO_AUTH_TOKEN = env('TWILIO_AUTH_TOKEN', default=None)
-TWILIO_PHONE_FROM = env('TWILIO_PHONE_FROM', default=None)
+THRESHOLD_SMS_ENABLED = env.bool('THRESHOLD_SMS_ENABLED', False)
+TWILIO_ACCOUNT_SID = env.str('TWILIO_ACCOUNT_SID', default='')
+TWILIO_AUTH_TOKEN = env.str('TWILIO_AUTH_TOKEN', default='')
+TWILIO_PHONE_FROM = env.str('TWILIO_PHONE_FROM', default='')
 THRESHOLD_CRITICAL_PHONES = env.list('THRESHOLD_CRITICAL_PHONES', default=[])
 THRESHOLD_WARNING_PHONES = env.list('THRESHOLD_WARNING_PHONES', default=[])
+
+# ==================== DJANGO ADMIN & FORM LIMITS ====================
+# Increase max number of form fields for admin with large datasets (e.g., 126K breaches)
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000  # Default is 1000, increased for large datasets
+FILE_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB

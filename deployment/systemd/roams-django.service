@@ -1,0 +1,40 @@
+[Unit]
+Description=ROAMS Django Application (SCADA Water Monitoring)
+After=network.target postgresql.service redis.service
+Requires=postgresql.service redis.service
+
+[Service]
+Type=notify
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/roams/roams_backend
+Environment="PATH=/opt/roams/venv_new/bin"
+Environment="DJANGO_SETTINGS_MODULE=roams_pro.settings"
+
+# Gunicorn configuration
+ExecStart=/opt/roams/venv_new/bin/gunicorn \
+    --workers 4 \
+    --worker-class sync \
+    --bind unix:/run/roams.sock \
+    --timeout 300 \
+    --max-requests 1000 \
+    --max-requests-jitter 50 \
+    --access-logfile /var/log/roams/gunicorn-access.log \
+    --error-logfile /var/log/roams/gunicorn-error.log \
+    --log-level info \
+    roams_pro.wsgi:application
+
+# Restart behavior
+Restart=always
+RestartSec=5
+StartLimitInterval=0
+
+# Security hardening
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/roams/roams_backend/logs /opt/roams/roams_backend/media /run
+
+[Install]
+WantedBy=multi-user.target

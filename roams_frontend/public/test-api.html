@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROAMS Auth & API Test</title>
+    <style>
+        body { 
+            font-family: system-ui; 
+            padding: 15px; 
+            max-width: 600px; 
+            margin: 0 auto;
+            font-size: 14px;
+        }
+        .test { 
+            margin: 10px 0; 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        .warning { background: #fff3cd; border-color: #ffc107; }
+        button { 
+            padding: 8px 16px; 
+            margin: 5px; 
+            cursor: pointer;
+            border: none;
+            background: #007bff;
+            color: white;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button.danger { background: #dc3545; }
+        pre { 
+            background: #f5f5f5; 
+            padding: 8px; 
+            overflow-x: auto;
+            font-size: 11px;
+            white-space: pre-wrap;
+        }
+        input { 
+            width: 100%; 
+            padding: 8px; 
+            margin: 5px 0;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+        h3 { margin: 10px 0 5px 0; }
+    </style>
+</head>
+<body>
+    <h2>🔐 ROAMS Auth & API Test</h2>
+    
+    <div class="test warning">
+        <h3>⚙️ Server Configuration</h3>
+        <label>Server URL:</label>
+        <input type="text" id="serverUrl" value="http://192.168.1.100:8000" placeholder="http://192.168.1.100:8000" />
+        <button onclick="saveServerUrl()">💾 Save Server URL</button>
+        <div id="serverStatus" style="margin-top: 5px; font-size: 12px;"></div>
+    </div>
+
+    <div class="test">
+        <h3>🔑 Login & Get Token</h3>
+        <label>Username:</label>
+        <input type="text" id="username" value="admin" />
+        <label>Password:</label>
+        <input type="password" id="password" value="" />
+        <button onclick="testLogin()">🔓 Login & Store Token</button>
+        <button onclick="clearToken()" class="danger">🗑️ Clear Token</button>
+        <div id="loginResult"></div>
+    </div>
+
+    <div id="results"></div>
+
+    <div class="test">
+        <h3>📋 Debug Info</h3>
+        <button onclick="showDebug()">Show Current State</button>
+        <button onclick="clearAll()" class="danger">Clear All Storage</button>
+        <div id="debug"></div>
+    </div>
+
+    <script>
+        const serverUrlInput = document.getElementById('serverUrl');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const resultsDiv = document.getElementById('results');
+        const loginResultDiv = document.getElementById('loginResult');
+        const serverStatusDiv = document.getElementById('serverStatus');
+
+        // Load from localStorage
+        function loadSettings() {
+            const savedUrl = localStorage.getItem('roams_server_url');
+            if (savedUrl) {
+                serverUrlInput.value = savedUrl;
+            }
+            updateServerStatus();
+        }
+
+        function updateServerStatus() {
+            const url = localStorage.getItem('roams_server_url');
+            const token = localStorage.getItem('token');
+            serverStatusDiv.innerHTML = `
+                <strong>Stored URL:</strong> ${url || 'Not set'}<br>
+                <strong>Token:</strong> ${token ? '✅ Present (' + token.substring(0, 10) + '...)' : '❌ Not found'}
+            `;
+        }
+
+        function saveServerUrl() {
+            const url = serverUrlInput.value.trim();
+            if (!url) {
+                alert('Please enter a server URL');
+                return;
+            }
+            localStorage.setItem('roams_server_url', url);
+            updateServerStatus();
+            alert('✅ Server URL saved: ' + url);
+        }
+
+        function clearToken() {
+            localStorage.removeItem('token');
+            updateServerStatus();
+            alert('Token cleared');
+        }
+
+        function clearAll() {
+            if (confirm('Clear all localStorage data?')) {
+                localStorage.clear();
+                updateServerStatus();
+                alert('All data cleared');
+            }
+        }
+
+        async function testLogin() {
+            const serverUrl = serverUrlInput.value.trim();
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (!username || !password) {
+                alert('Please enter username and password');
+                return;
+            }
+
+            loginResultDiv.innerHTML = '<p>🔄 Logging in...</p>';
+
+            try {
+                const response = await fetch(`${serverUrl}/api-token-auth/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.token) {
+                    localStorage.setItem('token', data.token);
+                    updateServerStatus();
+                    loginResultDiv.innerHTML = `
+                        <div class="success" style="margin-top: 10px; padding: 10px;">
+                            <strong>✅ Login Successful!</strong><br>
+                            Token: ${data.token.substring(0, 20)}...<br>
+                            <small>Token saved to localStorage</small>
+                        </div>
+                    `;
+                    runTests();
+                } else {
+                    loginResultDiv.innerHTML = `
+                        <div class="error" style="margin-top: 10px; padding: 10px;">
+                            <strong>❌ Login Failed</strong><br>
+                            ${JSON.stringify(data, null, 2)}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                loginResultDiv.innerHTML = `
+                    <div class="error" style="margin-top: 10px; padding: 10px;">
+                        <strong>❌ Connection Error</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function testEndpoint(name, path, requiresAuth = false) {
+            const serverUrl = serverUrlInput.value.trim();
+            const fullUrl = `${serverUrl}/api${path}`;
+            
+            try {
+                const headers = { 'Content-Type': 'application/json' };
+                if (requiresAuth) {
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        return {
+                            success: false,
+                            status: 'NO_TOKEN',
+                            data: 'No token in localStorage - please login first'
+                        };
+                    }
+                    headers['Authorization'] = `Token ${token}`;
+                }
+
+                const response = await fetch(fullUrl, { headers });
+                const data = await response.json();
+                
+                return {
+                    success: response.ok,
+                    status: response.status,
+                    data: JSON.stringify(data, null, 2)
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    status: 'ERROR',
+                    data: error.message
+                };
+            }
+        }
+
+        async function runTests() {
+            resultsDiv.innerHTML = '<h3>🧪 Running API Tests...</h3>';
+            const tests = [];
+
+            // Test 1: Health check (no auth)
+            tests.push(await testResult('Health Check', '/health/'));
+
+            // Test 2: Current user (requires auth)
+            tests.push(await testResult('Current User', '/user/', true));
+
+            // Test 3: Stations (requires auth)
+            tests.push(await testResult('Stations List', '/opcua_clientconfig/?limit=3', true));
+
+            // Test 4: Nodes (requires auth)
+            tests.push(await testResult('Nodes List', '/opcua_node/?limit=3', true));
+
+            resultsDiv.innerHTML = '<h3>🧪 API Test Results</h3>' + tests.join('');
+        }
+
+        async function testResult(name, path, requiresAuth = false) {
+            const result = await testEndpoint(name, path, requiresAuth);
+            const className = result.success ? 'success' : 'error';
+            const icon = result.success ? '✅' : '❌';
+            
+            return `
+                <div class="test ${className}">
+                    <h3>${icon} ${name} ${requiresAuth ? '🔐' : ''}</h3>
+                    <p><strong>Status:</strong> ${result.status}</p>
+                    <pre>${result.data}</pre>
+                </div>
+            `;
+        }
+
+        function showDebug() {
+            const debug = {
+                localStorage: {
+                    serverUrl: localStorage.getItem('roams_server_url'),
+                    token: localStorage.getItem('token') ? 'Present (length: ' + localStorage.getItem('token').length + ')' : 'Not found',
+                    allKeys: Object.keys(localStorage)
+                },
+                browser: {
+                    userAgent: navigator.userAgent,
+                    screen: `${window.screen.width}x${window.screen.height}`,
+                    viewport: `${window.innerWidth}x${window.innerHeight}`
+                }
+            };
+            
+            document.getElementById('debug').innerHTML = '<pre>' + JSON.stringify(debug, null, 2) + '</pre>';
+        }
+
+        // Auto-load settings on page load
+        window.onload = () => {
+            loadSettings();
+            const token = localStorage.getItem('token');
+            if (token) {
+                runTests();
+            }
+        };
+    </script>
+
+    <div style="margin-top: 20px; padding: 10px; background: #e7f3ff; border-radius: 5px; font-size: 12px;">
+        <strong>📖 Instructions:</strong>
+        <ol style="margin: 5px 0; padding-left: 20px;">
+            <li>Set your server URL and click "Save Server URL"</li>
+            <li>Enter your username and password</li>
+            <li>Click "Login & Store Token" - this will save the token to localStorage</li>
+            <li>Once logged in, API tests will run automatically</li>
+            <li>If you see "token not found" errors in ROAMS app, the token isn't being saved properly</li>
+        </ol>
+    </div>
+</body>
+</html>

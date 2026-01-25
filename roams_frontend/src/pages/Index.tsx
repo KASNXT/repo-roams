@@ -1,5 +1,6 @@
 // roams_frontend/src/pages/Index.tsx
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -7,6 +8,7 @@ import { GaugeCard } from "@/components/GaugeCard";
 import { ThemeToggle } from "@/components/analysis/ThemeToggle";
 import { UserDisplay } from "@/components/UserDisplay";
 import { normalizeKey } from "@/utils/lowercase";
+import { useRefreshInterval } from "@/hooks/useRefreshInterval";
 
 
 
@@ -19,20 +21,29 @@ import {
   Zap,
 } from "lucide-react";
 
-import { fetchSummary, type Summary, fetchNodes, type Node } from "@/services/api";
+import { fetchSummary, type Summary, fetchNodes, type Node, fetchActiveBreaches, type ThresholdBreach } from "@/services/api";
 import { parameterIcons } from "@/utils/iconMap";
 
 
 const Index: React.FC = () => {
+  const navigate = useNavigate();
+  
   // --- API-backed summary for the top cards ---
   const [summary, setSummary] = useState<Summary>();
   const [lastUpdated, setLastUpdated] = useState<string>("--");
   const [loadingSummary, setLoadingSummary] = useState<boolean>(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
 
+  // --- Active alarms/breaches ---
+  const [activeAlarms, setActiveAlarms] = useState<ThresholdBreach[]>([]);
+  const [loadingAlarms, setLoadingAlarms] = useState<boolean>(false);
+
   // --- Stations + Nodes ---
   const [stations, setStations] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Get refresh settings from hook
+  const dashboardRefresh = useRefreshInterval("dashboard", 10000); // Default: 10 seconds
 
   // ---- Fetch summary ----
   useEffect(() => {
@@ -56,12 +67,19 @@ const Index: React.FC = () => {
     };
 
     loadSummary();
-    const interval = setInterval(loadSummary, 10000);
+    
+    if (dashboardRefresh.enabled) {
+      const interval = setInterval(loadSummary, dashboardRefresh.intervalMs);
+      return () => {
+        mounted = false;
+        clearInterval(interval);
+      };
+    }
+    
     return () => {
       mounted = false;
-      clearInterval(interval);
     };
-  }, []);
+  }, [dashboardRefresh.enabled, dashboardRefresh.intervalMs]);
 
   // ---- Fetch nodes & group by station ----
   useEffect(() => {
@@ -97,9 +115,44 @@ const Index: React.FC = () => {
     };
 
     loadNodes();
-    const interval = setInterval(loadNodes, 10000);
-    return () => clearInterval(interval);
-  }, []);
+    
+    if (dashboardRefresh.enabled) {
+      const interval = setInterval(loadNodes, dashboardRefresh.intervalMs);
+      return () => clearInterval(interval);
+    }
+  }, [dashboardRefresh.enabled, dashboardRefresh.intervalMs]);
+
+  // ---- Fetch active alarms/breaches ----
+  useEffect(() => {
+    let mounted = true;
+
+    const loadAlarms = async () => {
+      setLoadingAlarms(true);
+      try {
+        const breaches = await fetchActiveBreaches();
+        if (!mounted) return;
+        setActiveAlarms(breaches);
+      } catch (err) {
+        console.error("Failed to fetch active alarms:", err);
+      } finally {
+        if (mounted) setLoadingAlarms(false);
+      }
+    };
+
+    loadAlarms();
+    
+    if (dashboardRefresh.enabled) {
+      const interval = setInterval(loadAlarms, dashboardRefresh.intervalMs);
+      return () => {
+        mounted = false;
+        clearInterval(interval);
+      };
+    }
+    
+    return () => {
+      mounted = false;
+    };
+  }, [dashboardRefresh.enabled, dashboardRefresh.intervalMs]);
 
   // ---- Status helper ----
   const getGaugeStatus = (value: number, min: number, max: number) => {
@@ -107,6 +160,11 @@ const Index: React.FC = () => {
     if (percentage > 85) return "critical";
     if (percentage > 70) return "warning";
     return "normal";
+  };
+
+  // ---- Navigate to alarms on card click ----
+  const handleAlarmsCardClick = () => {
+    navigate("/notifications");
   };
 
   return (
@@ -179,7 +237,10 @@ const Index: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <Card className="shadow-card hover:shadow-lg transition-all duration-200 hover:scale-105 cursor-pointer">
+              <Card 
+                className="shadow-card hover:shadow-lg transition-all duration-200 hover:scale-105 cursor-pointer"
+                onClick={handleAlarmsCardClick}
+              >
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <AlertTriangle className="h-5 w-5 text-status-warning" />
@@ -187,7 +248,9 @@ const Index: React.FC = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-status-warning">3</div>
+                  <div className="text-2xl font-bold text-status-warning">
+                    {loadingAlarms ? "…" : activeAlarms.length}
+                  </div>
                   <p className="text-sm text-muted-foreground">Active Warnings</p>
                 </CardContent>
               </Card>

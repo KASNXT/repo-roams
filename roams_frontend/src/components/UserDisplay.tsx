@@ -1,6 +1,7 @@
 // src/components/UserDisplay.tsx
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +23,22 @@ export const UserDisplay = () => {
     user.email?.substring(0, 2).toUpperCase() ||
     "U";
 
+  // Role styling configuration
+  const roleStyles: Record<string, string> = {
+    'superuser': 'bg-red-100 dark:bg-red-950 text-red-900 dark:text-red-100 border-red-300 dark:border-red-700',
+    'admin': 'bg-orange-100 dark:bg-orange-950 text-orange-900 dark:text-orange-100 border-orange-300 dark:border-orange-700',
+    'operator': 'bg-blue-100 dark:bg-blue-950 text-blue-900 dark:text-blue-100 border-blue-300 dark:border-blue-700',
+    'technician': 'bg-cyan-100 dark:bg-cyan-950 text-cyan-900 dark:text-cyan-100 border-cyan-300 dark:border-cyan-700',
+    'viewer': 'bg-green-100 dark:bg-green-950 text-green-900 dark:text-green-100 border-green-300 dark:border-green-700',
+  };
+
+  const getRoleDisplay = (role?: string) => {
+    if (!role) return 'User';
+    return role.charAt(0).toUpperCase() + role.slice(1);
+  };
+
+  const roleClass = roleStyles[user.role || 'viewer'] || roleStyles['viewer'];
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -35,9 +52,11 @@ export const UserDisplay = () => {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         {/* User info */}
         <div className="flex items-center justify-start gap-2 p-2">
-          <div className="flex flex-col space-y-1 leading-none">
+          <div className="flex flex-col space-y-1 leading-none flex-1">
             <p className="text-sm font-medium">{user.username || user.email}</p>
-            <p className="text-xs text-muted-foreground">ROAMS User</p>
+            <Badge className={`w-fit text-xs ${roleClass}`}>
+              {getRoleDisplay(user.role)}
+            </Badge>
           </div>
         </div>
 

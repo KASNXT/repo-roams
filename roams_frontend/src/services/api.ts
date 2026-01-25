@@ -1,17 +1,36 @@
 // roams_frontend/src/services/api.ts
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:8000/api";
+// Get server URL from localStorage or auto-detect based on environment
+export const getServerUrl = (): string => {
+  if (typeof window !== "undefined") {
+    // Check localStorage first (allows manual override via Settings page)
+    const stored = localStorage.getItem("roams_server_url");
+    if (stored) return stored;
+    
+    // Production: Use same domain as frontend (NGINX proxies /api to Django)
+    if (import.meta.env.PROD) {
+      return window.location.origin;
+    }
+    
+    // Development: Default to localhost backend
+    return "http://localhost:8000";
+  }
+  return "http://localhost:8000";
+};
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: false, // Set to true only if using session cookies
 });
 
-// --- Attach token automatically ---
+// --- Attach token and dynamic baseURL automatically ---
 api.interceptors.request.use((config) => {
+  // Set baseURL dynamically on each request
+  config.baseURL = `${getServerUrl()}/api`;
+  
   const token = localStorage.getItem("token");
   if (token) {
     config.headers = config.headers ?? {};
@@ -19,6 +38,20 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// --- Handle authentication errors ---
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      console.error("Authentication failed - token may be invalid or expired");
+      // Optionally clear token and redirect to login
+      // localStorage.removeItem("token");
+      // window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
 
 // -------- Types --------
 export interface User {
@@ -62,6 +95,28 @@ export interface ReadLog {
   timestamp: string;
 }
 
+export interface ThresholdBreach {
+  id: number;
+  node: number;
+  node_name: string;
+  node_id?: string;
+  node_tag_name?: string;
+  station_name?: string;
+  threshold: number;
+  breach_value: number;
+  breach_type: string;
+  level?: string;
+  value?: number;
+  min_value?: number;
+  max_value?: number;
+  warning_level?: number;
+  critical_level?: number;
+  timestamp: string;
+  acknowledged: boolean;
+  acknowledged_by?: string;
+  acknowledged_at?: string;
+}
+
 export interface Summary {
   total_active_stations: number;
   total_connected_stations: number;
@@ -83,7 +138,7 @@ export async function fetchStations(): Promise<Station[]> {
     results: Station[];
   };
 
-  const res = await api.get<PaginatedResponse | Station[]>("/clients/");
+  const res = await api.get<PaginatedResponse | Station[]>("/opcua_clientconfig/");
   return Array.isArray(res.data) ? res.data : res.data.results || [];
 }
 
@@ -122,7 +177,7 @@ export async function fetchReadLogs(
   }
 
   let allResults: ReadLog[] = [];
-  let url: string | null = "/read-logs/";
+  let url: string | null = "/opcua_readlog/";
 
     const params: Record<string, string> = {};
 
@@ -137,7 +192,7 @@ export async function fetchReadLogs(
       allResults = allResults.concat(data.results);
 
       // next may be null → perfectly valid now
-      url = data.next ? data.next.replace(API_BASE_URL, "") : null;
+      url = data.next ? data.next.replace(`${getServerUrl()}/api`, "") : null;
     }
 
     return allResults;
@@ -147,6 +202,86 @@ export async function fetchReadLogs(
 export async function fetchSummary(): Promise<Summary> {
   const res = await api.get<Summary>("/active-stations/");
   return res.data;
+}
+
+// ✅ Fetch Active Threshold Breaches (Alarms)
+export async function fetchActiveBreaches(): Promise<ThresholdBreach[]> {
+  interface PaginatedBreachResponse {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: ThresholdBreach[];
+  }
+
+  try {
+    const res = await api.get<PaginatedBreachResponse | ThresholdBreach[]>("/breaches/?acknowledged=false");
+    const data = res.data;
+
+    if (Array.isArray(data)) {
+      return data;
+    } else if ("results" in data) {
+      return data.results;
+    } else {
+      console.warn("⚠️ Unexpected breach API response format:", data);
+      return [];
+    }
+  } catch (err) {
+    console.error("Failed to fetch active breaches:", err);
+    return [];
+  }
+}
+
+// ✅ Fetch All Threshold Breaches (with filters)
+export async function fetchBreaches(acknowledged?: boolean): Promise<ThresholdBreach[]> {
+  interface PaginatedBreachResponse {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: ThresholdBreach[];
+  }
+
+  let allResults: ThresholdBreach[] = [];
+  let url: string | null = "/breaches/?limit=100"; // Limit to 100 per page to reduce response size
+
+  const params: Record<string, string> = {};
+
+  if (acknowledged !== undefined) {
+    params.acknowledged = String(acknowledged);
+  }
+
+  try {
+    let pageCount = 0;
+    const maxPages = 5; // Limit to 500 breaches max for now (5 pages × 100)
+    
+    while (url && pageCount < maxPages) {
+      try {
+        pageCount++;
+        console.log(`📡 Fetching page ${pageCount} from: ${url}`);
+        const res = await api.get<PaginatedBreachResponse>(url, { 
+          params,
+          timeout: 5000, // 5 second timeout per request
+        });
+        const data: PaginatedBreachResponse = res.data;
+        console.log(`📦 Page ${pageCount}: Got ${data.results.length} results, next: ${data.next ? "yes" : "no"}`);
+
+        allResults = allResults.concat(data.results);
+        url = data.next ? data.next.replace(`${getServerUrl()}/api`, "") : null;
+      } catch (err) {
+        console.error("❌ Error in fetch loop:", err);
+        throw err;
+      }
+    }
+    
+    if (pageCount >= maxPages && url) {
+      console.log("⚠️ Reached max pages limit, stopping pagination");
+    }
+    
+    console.log(`✅ Total fetched: ${allResults.length} breaches`);
+    return allResults;
+  } catch (error) {
+    console.error("❌ Error fetching breaches:", error);
+    throw error;
+  }
 }
 
 // -------- Telemetry Data --------

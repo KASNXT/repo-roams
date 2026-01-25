@@ -42,10 +42,24 @@ const LoginPage: React.FC = () => {
       });
       navigate("/"); // go to dashboard
     } catch (err: any) {
+      console.error("Login error:", err);
+      let errorMessage = "Invalid credentials";
+      
+      // Check for specific error types
+      if (err.response?.data?.non_field_errors) {
+        errorMessage = err.response.data.non_field_errors[0];
+      } else if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        errorMessage = "Connection timeout. Check if backend server is running.";
+      } else if (err.code === 'ERR_NETWORK') {
+        errorMessage = "Cannot reach server. Check your network connection.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: err.response?.data?.non_field_errors?.[0] || "Invalid credentials",
+        description: errorMessage,
       });
     } finally {
       setLoading(false);
@@ -92,8 +106,7 @@ const LoginPage: React.FC = () => {
         </CardHeader>
 
         <CardContent>
-          <Tabs defaultValue="login" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2">
+          <Tabs defaultValue="login" className="space-y-4">        <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
