@@ -32,7 +32,12 @@ DEBUG = env.bool("DEBUG", default=True)
 # SECURITY WARNING: keep the secret key used in production secret!
 
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '144.91.79.167',  # Contabo VPS IP
+    '*'  # Remove this in production - security risk
+]
 
 
 # Application definition
@@ -63,6 +68,10 @@ CORS_ALLOWED_ORIGINS = [
     'http://192.168.183.232:8000',  # Direct backend access on WSL
     'http://192.168.1.100:5173',  # Windows Wi-Fi IP for phone access
     'http://192.168.1.100:8000',  # Windows backend access
+    'http://144.91.79.167',  # Contabo VPS - Nginx port 80
+    'http://144.91.79.167:3000',  # Contabo VPS - Frontend dev server
+    'http://144.91.79.167:5173',  # Contabo VPS - Vite dev server
+    'http://144.91.79.167:8000',  # Contabo VPS - Django direct access
 ]
 
 # Allow credentials for CORS (if needed for cookies/sessions)
