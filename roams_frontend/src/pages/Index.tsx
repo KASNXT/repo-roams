@@ -17,7 +17,6 @@ import {
   Wifi,
   Clock,
   AlertTriangle,
-  TrendingUp,
   Zap,
 } from "lucide-react";
 
@@ -169,29 +168,27 @@ const Index: React.FC = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full overflow-hidden">
         <AppSidebar />
-        <SidebarInset className="flex-1">
-          {/* Top Bar */}
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-gradient-surface px-4">
+        <SidebarInset className="flex-1 flex flex-col max-h-screen overflow-y-auto">
+          {/* Top Bar - Sticky on ALL screens */}
+          <header className="sticky top-0 z-50 flex flex-row h-14 md:h-16 shrink-0 items-center gap-2 border-b bg-gradient-surface/95 backdrop-blur supports-[backdrop-filter]:bg-gradient-surface/80 px-2 md:px-4 shadow-sm">
             <SidebarTrigger className="-ml-1" />
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-6 w-6 text-primary" />
-              <div>
-                <h1 className="text-xl font-bold text-foreground">ROAMS</h1>
-                <p className="text-xs text-muted-foreground">
-                  Remote Operation & Monitoring System For Aquifer
-                </p>
-              </div>
+            <img src="/roamslogo.png" alt="ROAMS Logo" className="h-9 md:h-12 w-9 md:w-12 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <h1 className="text-sm md:text-xl font-bold text-foreground truncate">ROAMS</h1>
+              <p className="text-[10px] md:text-xs text-muted-foreground truncate">
+                Remote Operation & Monitoring System For Aquifer
+              </p>
             </div>
-            <div className="flex items-center gap-3 ml-auto">
+            <div className="flex items-center gap-1 md:gap-3">
               <ThemeToggle />
               <UserDisplay />
             </div>
           </header>
 
           {/* Main Content */}
-          <div className="flex-1 p-6">
+          <div className="flex-1 p-2 md:p-6">
             {/* Top Metrics Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <Card className="shadow-card hover:shadow-lg transition-all duration-200 hover:scale-105 cursor-pointer">

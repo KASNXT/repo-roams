@@ -37,7 +37,6 @@ const Overview = () => {
   const [overallUptime, setOverallUptime] = useState<number>(0);
   const [serverUptime, setServerUptime] = useState<any>(null);
   const [loading, setLoading] = useState(true); // Only for INITIAL load
-  const [isRefreshing, setIsRefreshing] = useState(false); // For auto-refresh indicator
 
   // Get refresh settings from hook
   const refreshSettings = useRefreshInterval("overview", 5 * 60 * 1000); // Default: 5 minutes
@@ -64,8 +63,6 @@ const Overview = () => {
         // Only show loading spinner on initial load, not on refresh
         if (isInitialLoad) {
           setLoading(true);
-        } else {
-          setIsRefreshing(true); // Subtle refresh flag
         }
         
         // Fetch uptime data from backend
@@ -85,7 +82,6 @@ const Overview = () => {
         }
         
         // Set server uptime info (simulate from overall data)
-        const now = new Date();
         const uptime_seconds = Math.random() * 86400 * 30; // Simulate uptime
         setServerUptime({
           status: 'running',
@@ -107,8 +103,6 @@ const Overview = () => {
         if (isInitialLoad) {
           setLoading(false);
           isInitialLoad = false;
-        } else {
-          setIsRefreshing(false); // Stop subtle refresh indicator
         }
       }
     };
@@ -125,25 +119,25 @@ const Overview = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full overflow-hidden">
         <AppSidebar />
-        <SidebarInset className="flex-1 bg-background">
-          {/* Header */}
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-gradient-to-r from-primary/5 to-primary/10 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-6 w-6 text-primary" />
-              <div>
-                <h1 className="text-xl font-bold text-foreground">ROAMS - Overview</h1>
-                <p className="text-xs text-muted-foreground">
+        <SidebarInset className="flex-1 bg-background flex flex-col max-h-screen overflow-y-auto">
+          {/* Header - Sticky on ALL screens */}
+          <header className="sticky top-0 z-50 flex flex-col md:flex-row h-auto md:h-16 shrink-0 gap-2 border-b bg-gradient-to-r from-primary/5 to-primary/10 backdrop-blur supports-[backdrop-filter]:from-primary/5 supports-[backdrop-filter]:to-primary/10 px-4 py-2 md:py-0 shadow-sm">
+            <div className="flex items-center gap-2 flex-1">
+              <SidebarTrigger className="-ml-1" />
+              <TrendingUp className="h-5 md:h-6 w-5 md:w-6 text-primary shrink-0" />
+              <div className="flex-1 min-w-0">
+                <h1 className="text-lg md:text-xl font-bold text-foreground truncate">ROAMS - Overview</h1>
+                <p className="text-xs text-muted-foreground hidden md:block">
                   System Overview & Performance Summary
                 </p>
               </div>
             </div>
           </header>
 
-          {/* Body */}
-          <div className="flex-1 p-6 space-y-6">
+          {/* Body - Scrollable */}
+          <div className="flex-1 p-2 md:p-6 space-y-4 md:space-y-6">
             {/* System Status Cards - Now with hover effects and real data */}
             <SystemStatusCards />
 

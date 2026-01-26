@@ -267,28 +267,28 @@ const Control = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full overflow-hidden">
         <AppSidebar />
-        <SidebarInset className="flex-1">
-          {/* ---- Header ---- */}
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-gradient-surface px-4">
-            <SidebarTrigger className="-ml-1" />
+        <SidebarInset className="flex-1 flex flex-col max-h-screen overflow-y-auto">
+          {/* ---- Header - Sticky on ALL screens ---- */}
+          <header className="sticky top-0 z-50 flex flex-col md:flex-row h-auto md:h-16 shrink-0 gap-2 border-b bg-gradient-surface/95 backdrop-blur supports-[backdrop-filter]:bg-gradient-surface/80 px-4 py-2 md:py-0 shadow-sm">
             <div className="flex items-center gap-2 flex-1">
-              <Sliders className="h-5 w-5" />
-              <div>
-                <h1 className="text-xl font-bold text-foreground">Pump House</h1>
-                <p className="text-xs text-muted-foreground">
+              <SidebarTrigger className="-ml-1" />
+              <Sliders className="h-5 w-5 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <h1 className="text-lg md:text-xl font-bold text-foreground truncate">Pump House</h1>
+                <p className="text-xs text-muted-foreground hidden md:block">
                   Station Control & Operations
                 </p>
               </div>
-              <div className="flex items-center gap-3 ml-auto">
-                 <UserDisplay />
-              </div>
+            </div>
+            <div className="flex items-center gap-3 ml-auto">
+              <UserDisplay />
             </div>
           </header>
 
-          {/* ---- Body ---- */}
-          <div className="flex-1 p-6 space-y-6">
+          {/* ---- Body - Scrollable ---- */}
+          <div className="flex-1 overflow-y-auto p-2 md:p-6 space-y-4 md:space-y-6">
             {/* Station Selection */}
             <Card className="shadow-card">
               <CardHeader>
@@ -308,7 +308,7 @@ const Control = () => {
                       onValueChange={setSelectedStation}
                       disabled={loadingStations}
                     >
-                      <SelectTrigger className="w-64">
+                      <SelectTrigger className="w-full md:w-64">
                         <SelectValue
                           placeholder={
                             loadingStations

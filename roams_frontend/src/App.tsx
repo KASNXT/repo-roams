@@ -33,10 +33,10 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider
         attribute="class"
-        defaultTheme="light"
-        enableSystem
+        defaultTheme="system"
+        enableSystem={true}
         storageKey="roams_theme_preference"
-        disableTransitionOnChange
+        disableTransitionOnChange={false}
       >
         <TooltipProvider>
           <Toaster />

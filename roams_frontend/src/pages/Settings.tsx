@@ -31,26 +31,26 @@ const Settings = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full overflow-hidden">
         <AppSidebar />
-        <SidebarInset className="flex-1">
-          {/* Header */}
-          <header className="flex flex-col md:flex-row md:h-16 shrink-0 gap-2 border-b bg-gradient-surface px-4 py-2 md:py-0">
+        <SidebarInset className="flex-1 flex flex-col max-h-screen overflow-y-auto">
+          {/* Header - Sticky on ALL screens - Inline */}
+          <header className="sticky top-0 z-50 flex flex-row h-auto md:h-16 shrink-0 gap-2 border-b bg-gradient-surface/95 backdrop-blur supports-[backdrop-filter]:bg-gradient-surface/80 px-4 py-2 md:py-0 shadow-sm">
             <div className="flex items-center gap-2 flex-1">
               <SidebarTrigger className="-ml-1" />
-              <TrendingUp className="h-6 w-6 text-primary" />
+              <TrendingUp className="h-6 w-6 text-primary shrink-0" />
               <div className="flex-1 min-w-0">
                 <h1 className="text-lg md:text-xl font-bold text-foreground truncate">ROAMS - Settings</h1>
                 <p className="text-xs text-muted-foreground hidden md:block">System Configuration & Management</p>
               </div>
             </div>
             <div className="flex items-center gap-3 ml-auto">
-                  <ThemeToggle />
-                  <UserDisplay />
+              <ThemeToggle />
+              <UserDisplay />
             </div>
           </header>
 
-          {/* Main Content */}
+          {/* Main Content - Scrollable */}
           <div className="flex-1 p-2 md:p-6">
             {/* Mobile: Dropdown Navigation */}
             <div className="md:hidden mb-4">

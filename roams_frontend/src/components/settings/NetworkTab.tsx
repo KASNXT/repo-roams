@@ -185,33 +185,56 @@ export function NetworkTab() {
         </div>
       )}
 
-      {/* Connection Status */}
+      {/* Connection Status - Horizontal Table Layout */}
       <Card className="shadow-card">
         <CardHeader>
           <CardTitle className="text-base font-medium">Connection Status</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <StatusIndicator status="connected" label="Ethernet" className="mb-2" />
-              <div className="text-sm text-muted-foreground">Primary Interface</div>
-            </div>
-            <div className="text-center">
-              <StatusIndicator status="connected" label="Internet" className="mb-2" />
-              <div className="text-sm text-muted-foreground">External Access</div>
-            </div>
-            <div className="text-center">
-              <StatusIndicator 
-                status={apiStatus === "connected" ? "connected" : apiStatus === "testing" ? "warning" : "disconnected"} 
-                label="API Server" 
-                className="mb-2" 
-              />
-              <div className="text-sm text-muted-foreground">Backend Connection</div>
-            </div>
-            <div className="text-center">
-              <StatusIndicator status="connected" label="OPC UA" className="mb-2" />
-              <div className="text-sm text-muted-foreground">Industrial Network</div>
-            </div>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-2 px-2 text-sm font-medium text-muted-foreground">Interface</th>
+                  <th className="text-center py-2 px-2 text-sm font-medium text-muted-foreground">Status</th>
+                  <th className="text-left py-2 px-2 text-sm font-medium text-muted-foreground hidden sm:table-cell">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b hover:bg-muted/5">
+                  <td className="py-3 px-2 font-medium text-sm">Ethernet</td>
+                  <td className="py-3 px-2 flex justify-center">
+                    <StatusIndicator status="connected" label="" className="" />
+                  </td>
+                  <td className="py-3 px-2 text-sm text-muted-foreground hidden sm:table-cell">Primary Interface</td>
+                </tr>
+                <tr className="border-b hover:bg-muted/5">
+                  <td className="py-3 px-2 font-medium text-sm">Internet</td>
+                  <td className="py-3 px-2 flex justify-center">
+                    <StatusIndicator status="connected" label="" className="" />
+                  </td>
+                  <td className="py-3 px-2 text-sm text-muted-foreground hidden sm:table-cell">External Access</td>
+                </tr>
+                <tr className="border-b hover:bg-muted/5">
+                  <td className="py-3 px-2 font-medium text-sm">API Server</td>
+                  <td className="py-3 px-2 flex justify-center">
+                    <StatusIndicator 
+                      status={apiStatus === "connected" ? "connected" : apiStatus === "testing" ? "warning" : "disconnected"} 
+                      label="" 
+                      className="" 
+                    />
+                  </td>
+                  <td className="py-3 px-2 text-sm text-muted-foreground hidden sm:table-cell">Backend Connection</td>
+                </tr>
+                <tr className="hover:bg-muted/5">
+                  <td className="py-3 px-2 font-medium text-sm">OPC UA</td>
+                  <td className="py-3 px-2 flex justify-center">
+                    <StatusIndicator status="connected" label="" className="" />
+                  </td>
+                  <td className="py-3 px-2 text-sm text-muted-foreground hidden sm:table-cell">Industrial Network</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </CardContent>
       </Card>

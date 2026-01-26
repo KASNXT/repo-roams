@@ -146,21 +146,23 @@ const Notifications = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full overflow-hidden">
         <AppSidebar />
-        <SidebarInset className="flex-1">
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-gradient-surface px-4">
-            <SidebarTrigger className="-ml-1" />
-            <div className="flex items-center gap-2">
-              <Bell className="h-6 w-6 text-primary" />
-              <div>
-                <h1 className="text-xl font-bold text-foreground">Notifications</h1>
-                <p className="text-xs text-muted-foreground">System Alerts & Status Updates</p>
+        <SidebarInset className="flex-1 flex flex-col max-h-screen overflow-y-auto">
+          {/* Header - Sticky on ALL screens */}
+          <header className="sticky top-0 z-50 flex flex-col md:flex-row h-auto md:h-16 shrink-0 gap-2 border-b bg-gradient-surface/95 backdrop-blur supports-[backdrop-filter]:bg-gradient-surface/80 px-4 py-2 md:py-0 shadow-sm">
+            <div className="flex items-center gap-2 flex-1">
+              <SidebarTrigger className="-ml-1" />
+              <Bell className="h-5 md:h-6 w-5 md:w-6 text-primary shrink-0" />
+              <div className="flex-1 min-w-0">
+                <h1 className="text-lg md:text-xl font-bold text-foreground truncate">Notifications</h1>
+                <p className="text-xs text-muted-foreground hidden md:block">System Alerts & Status Updates</p>
               </div>
             </div>
           </header>
 
-          <div className="flex-1 p-4 md:p-6 space-y-6">
+          {/* Content - Scrollable */}
+          <div className="flex-1 p-2 md:p-6 space-y-4 md:space-y-6">
             {/* Loading State */}
             {loading && (
               <Card className="border-blue-200 bg-blue-50">

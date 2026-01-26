@@ -305,9 +305,9 @@ export const TelemetryCharts = ({
 
   return (
     <div className="space-y-6">
-      {/* Controls */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      {/* Controls - Stacked in rows */}
+      <div className="flex flex-col space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0">
           <div>
             <label className="text-sm font-medium mb-2 block">Chart Type</label>
             <Select value={chartType} onValueChange={(v) => setChartType(v as any)}>
@@ -322,9 +322,9 @@ export const TelemetryCharts = ({
             </Select>
           </div>
 
-          <div>
+          <div className="flex-1">
             <label className="text-sm font-medium mb-2 block">Parameters</label>
-            <div className="flex space-x-2 flex-wrap">
+            <div className="flex space-x-2 flex-wrap gap-2">
               {nodes.map((n) => {
                 const name = (n.tag_name || n.add_new_tag_name || "").toString();
                 if (!name) return null;
@@ -338,7 +338,7 @@ export const TelemetryCharts = ({
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
           <Badge variant="secondary" className="bg-status-connected-bg text-status-connected">
             <Zap className="h-3 w-3 mr-1" />
             {autoRefresh ? "Auto Refresh" : "Live Data"}

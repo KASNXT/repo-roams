@@ -316,11 +316,11 @@ const Analysis = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full overflow-hidden">
         <AppSidebar />
-        <SidebarInset className="flex-1">
-          {/* Header */}
-          <header className="flex flex-col md:flex-row md:h-16 shrink-0 gap-2 border-b bg-gradient-surface px-4 py-2 md:py-0">
+        <SidebarInset className="flex-1 flex flex-col max-h-screen overflow-y-auto">
+          {/* Header - Sticky on ALL screens */}
+          <header className="sticky top-0 z-50 flex flex-col md:flex-row h-auto md:h-16 shrink-0 gap-2 border-b bg-gradient-surface/95 backdrop-blur supports-[backdrop-filter]:bg-gradient-surface/80 px-4 py-2 md:py-0 shadow-sm">
             <div className="flex items-center gap-2 flex-1">
               <SidebarTrigger className="-ml-1" />
               <TrendingUp className="h-6 w-6 text-primary" />
@@ -368,8 +368,8 @@ const Analysis = () => {
             </div>
           </header>
 
-          {/* Search + Filter Bar */}
-          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2 p-4 border-b bg-muted/30">
+          {/* Search + Filter Bar - Also Sticky on ALL screens */}
+          <div className="sticky top-[3.5rem] md:top-16 z-40 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2 p-4 border-b bg-muted/95 backdrop-blur supports-[backdrop-filter]:bg-muted/80 shadow-sm">
             <div className="flex items-center gap-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input placeholder="Search telemetry or alarms..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="flex-1 md:w-64" />
@@ -388,7 +388,7 @@ const Analysis = () => {
             </Select>
           </div>
 
-          {/* Main Content */}
+          {/* Main Content - Scrollable */}
           <div className="flex-1 p-2 md:p-6 space-y-4 md:space-y-6">
             {!selectedWell ? (
               <div className="text-center text-muted-foreground p-8">No station selected or available.</div>

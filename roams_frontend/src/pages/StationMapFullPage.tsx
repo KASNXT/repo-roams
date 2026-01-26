@@ -8,10 +8,10 @@ export default function StationMapFullPage() {
 
   return (
     <div className="h-screen w-screen flex flex-col bg-background">
-      {/* Header */}
-      <div className="border-b bg-card p-4 shadow-sm z-10">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center gap-3">
+      {/* Header - Sticky on ALL screens */}
+      <div className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 p-3 md:p-4 shadow-sm">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2 max-w-7xl mx-auto">
+          <div className="flex items-center gap-2 md:gap-3">
             <Button
               variant="ghost"
               size="sm"
@@ -19,11 +19,11 @@ export default function StationMapFullPage() {
               className="gap-2"
             >
               <ChevronLeft className="h-4 w-4" />
-              Back
+              <span className="hidden sm:inline">Back</span>
             </Button>
-            <h1 className="text-2xl font-bold">Station Map - Full View</h1>
+            <h1 className="text-lg md:text-2xl font-bold">Station Map - Full View</h1>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs md:text-sm text-muted-foreground">
             Real-time station locations and operational metrics
           </p>
         </div>

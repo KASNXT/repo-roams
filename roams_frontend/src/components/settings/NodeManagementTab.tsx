@@ -70,25 +70,27 @@ export function NodeManagementTab() {
   );
 
   return (
-    <div className="space-y-6">
-      {/* --- Action Bar --- */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 md:space-y-6">
+      {/* --- Action Bar - Responsive --- */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h3 className="text-lg font-medium">Node & Tag Management</h3>
-          <p className="text-sm text-muted-foreground">
+          <h3 className="text-base md:text-lg font-medium">Node & Tag Management</h3>
+          <p className="text-xs md:text-sm text-muted-foreground">
             Configure monitored data points and sensor mappings
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" size="sm" className="w-full sm:w-auto">
             <Upload className="h-4 w-4 mr-2" />
-            Bulk Import
+            <span className="hidden sm:inline">Bulk Import</span>
+            <span className="sm:hidden">Import</span>
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="w-full sm:w-auto">
             <Download className="h-4 w-4 mr-2" />
-            Export CSV
+            <span className="hidden sm:inline">Export CSV</span>
+            <span className="sm:hidden">Export</span>
           </Button>
-          <Button size="sm" className="bg-gradient-primary">
+          <Button size="sm" className="bg-gradient-primary w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             Add Node
           </Button>
@@ -110,25 +112,26 @@ export function NodeManagementTab() {
         </CardContent>
       </Card>
 
-      {/* --- Nodes Table --- */}
+      {/* --- Nodes Table - Scrollable on mobile --- */}
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle className="text-base font-medium">Monitored Data Points</CardTitle>
+          <CardTitle className="text-sm md:text-base font-medium">Monitored Data Points</CardTitle>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Node ID</TableHead>
-                <TableHead>Alias</TableHead>
-                <TableHead>Access Level</TableHead>
-                <TableHead>Units</TableHead>
-                <TableHead>Last Value</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Station</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[200px]">Node ID</TableHead>
+                  <TableHead className="min-w-[150px]">Alias</TableHead>
+                  <TableHead className="min-w-[120px]">Access Level</TableHead>
+                  <TableHead className="min-w-[80px]">Units</TableHead>
+                  <TableHead className="min-w-[100px]">Last Value</TableHead>
+                  <TableHead className="min-w-[100px]">Status</TableHead>
+                  <TableHead className="min-w-[120px]">Station</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
@@ -188,6 +191,7 @@ export function NodeManagementTab() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
