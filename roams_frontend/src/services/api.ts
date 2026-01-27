@@ -138,7 +138,7 @@ export async function fetchStations(): Promise<Station[]> {
     results: Station[];
   };
 
-  const res = await api.get<PaginatedResponse | Station[]>("/opcua_clientconfig/");
+  const res = await api.get<PaginatedResponse | Station[]>("/clients/");
   return Array.isArray(res.data) ? res.data : res.data.results || [];
 }
 
