@@ -4,16 +4,17 @@ import axios from "axios";
 // Get server URL from localStorage or auto-detect based on environment
 export const getServerUrl = (): string => {
   if (typeof window !== "undefined") {
-    // Check localStorage first (allows manual override via Settings page)
-    const stored = localStorage.getItem("roams_server_url");
-    if (stored) return stored;
-    
-    // Production: Use same domain as frontend (NGINX proxies /api to Django)
+    // Production: ALWAYS use same domain as frontend (NGINX proxies /api to Django)
+    // This prevents localStorage from breaking production deployments
     if (import.meta.env.PROD) {
       return window.location.origin;
     }
     
-    // Development: Default to localhost backend
+    // Development: Check localStorage first (allows manual override via Settings page)
+    const stored = localStorage.getItem("roams_server_url");
+    if (stored) return stored;
+    
+    // Development fallback: Default to localhost backend
     return "http://localhost:8000";
   }
   return "http://localhost:8000";
