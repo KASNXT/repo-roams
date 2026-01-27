@@ -246,7 +246,7 @@ export const TelemetryCharts = ({
           </div>
           <div className="flex items-center gap-2">
             <div className="text-2xl font-bold text-primary">{data[data.length - 1]?.value ?? "--"} {unit}</div>
-            <Button size="xs" variant="outline" onClick={() => setShowBrushs((s) => ({ ...s, [paramName]: !s[paramName] }))}>
+            <Button size="sm" variant="outline" onClick={() => setShowBrushs((s) => ({ ...s, [paramName]: !s[paramName] }))}>
               {isBrushVisible ? "Hide" : "Timeline"}
             </Button>
           </div>
@@ -285,7 +285,7 @@ export const TelemetryCharts = ({
         {data.length > 1 && isBrushVisible && (
           <div className="mt-1 flex items-center gap-2 px-1">
             <Button
-              size="xs"
+              size="sm"
               variant="outline"
               className="h-7 px-2 py-0 text-xs hover:bg-destructive hover:text-white transition-colors"
               onClick={() => setBrushRanges((prev) => {

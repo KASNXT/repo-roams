@@ -55,7 +55,7 @@ const fetchAlarmsFromDatabase = async (_wellId: string, _dateRange?: DateRange):
 
     const res = await api.get("/breaches/");
     // Handle both paginated and array responses
-    const breaches = Array.isArray(res.data) ? res.data : (res.data?.results || []);
+    const breaches = Array.isArray(res.data) ? res.data : ((res.data as any)?.results || []);
 
     // Filter by station if needed and convert to Alarm format
     return breaches.map((breach: any) => ({

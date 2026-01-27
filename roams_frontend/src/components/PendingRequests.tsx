@@ -75,7 +75,7 @@ export function PendingRequests({
     try {
       const query = showPendingOnly ? '?status=pending' : '';
       const response = await api.get(`/control-state-requests/${query}`);
-      const data = Array.isArray(response.data) ? response.data : (response.data?.results || []);
+      const data = Array.isArray(response.data) ? response.data : ((response.data as any)?.results || []);
       setRequests(data);
       setError(null);
     } catch (err) {

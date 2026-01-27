@@ -67,7 +67,7 @@ export function BooleanControlHistory({
                 limit: Math.min(limit || 30, 10), // Cap at 10 to reduce response size
                 ordering: '-timestamp'
               },
-              signal: abortController.signal,
+              signal: abortController.signal as any,
             }
           );
           const data = response.data;
