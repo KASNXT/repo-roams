@@ -5,11 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { StatusIndicator } from "@/components/StatusIndicator";
-import { CheckCircle, AlertCircle, Copy } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 
 interface NetworkConfig {
-  serverUrl: string;
-  environment: "development" | "staging" | "production";
   apiTimeout: number;
   requestRetries: number;
   healthCheckInterval: number;
@@ -22,52 +20,8 @@ interface NetworkConfig {
   };
 }
 
-const ENVIRONMENT_PRESETS = {
-  development: {
-    serverUrl: "http://localhost:8000",
-    apiTimeout: 30000,
-    requestRetries: 3,
-    healthCheckInterval: 35,
-    reconnectionMaxDelay: 60,
-    logLevel: "debug" as const,
-    features: {
-      enableAdvancedMonitoring: true,
-      enableAutoRefresh: true,
-      enableOfflineMode: true,
-    },
-  },
-  staging: {
-    serverUrl: "https://api-staging.example.com",
-    apiTimeout: 20000,
-    requestRetries: 3,
-    healthCheckInterval: 30,
-    reconnectionMaxDelay: 60,
-    logLevel: "info" as const,
-    features: {
-      enableAdvancedMonitoring: true,
-      enableAutoRefresh: true,
-      enableOfflineMode: false,
-    },
-  },
-  production: {
-    serverUrl: "https://api.example.com",
-    apiTimeout: 15000,
-    requestRetries: 2,
-    healthCheckInterval: 40,
-    reconnectionMaxDelay: 120,
-    logLevel: "warn" as const,
-    features: {
-      enableAdvancedMonitoring: false,
-      enableAutoRefresh: true,
-      enableOfflineMode: false,
-    },
-  },
-};
-
 export function NetworkTab() {
   const [config, setConfig] = useState<NetworkConfig>({
-    serverUrl: localStorage.getItem("roams_server_url") || "http://localhost:8000",
-    environment: (localStorage.getItem("roams_environment") as any) || "development",
     apiTimeout: Number(localStorage.getItem("roams_api_timeout")) || 30000,
     requestRetries: Number(localStorage.getItem("roams_request_retries")) || 3,
     healthCheckInterval: Number(localStorage.getItem("roams_health_check")) || 35,
@@ -80,73 +34,11 @@ export function NetworkTab() {
     },
   });
 
-  const [serverError, setServerError] = useState<string>("");
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [apiStatus, setApiStatus] = useState<"connected" | "disconnected" | "testing">("disconnected");
-
-  const validateServerUrl = (url: string): boolean => {
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
-  const handleSaveServer = async () => {
-    if (!config.serverUrl.trim()) {
-      setServerError("Server URL cannot be empty");
-      return;
-    }
-
-    if (!validateServerUrl(config.serverUrl)) {
-      setServerError("Invalid URL format. Example: http://localhost:8000");
-      return;
-    }
-
-    // Test connection to the server
-    setApiStatus("testing");
-    try {
-      const response = await fetch(`${config.serverUrl}/api/health/`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!response.ok) {
-        setServerError(`Server returned status ${response.status}`);
-        setApiStatus("disconnected");
-        return;
-      }
-
-      // Save to localStorage
-      localStorage.setItem("roams_server_url", config.serverUrl);
-      setServerError("");
-      setSaveSuccess(true);
-      setApiStatus("connected");
-
-      setTimeout(() => setSaveSuccess(false), 3000);
-      console.log("Server URL updated. Page refresh may be required.");
-    } catch (error) {
-      setServerError("Unable to connect to server. Please check the URL and try again.");
-      setApiStatus("disconnected");
-      console.error(error);
-    }
-  };
-
-  const handleLoadPreset = (env: "development" | "staging" | "production") => {
-    const preset = ENVIRONMENT_PRESETS[env];
-    setConfig(prev => ({
-      ...preset,
-      environment: env,
-    }));
-    setSaveSuccess(false);
-  };
 
   const handleSaveAll = () => {
     // Save all configuration to localStorage
-    localStorage.setItem("roams_server_url", config.serverUrl);
-    localStorage.setItem("roams_environment", config.environment);
     localStorage.setItem("roams_api_timeout", config.apiTimeout.toString());
     localStorage.setItem("roams_request_retries", config.requestRetries.toString());
     localStorage.setItem("roams_health_check", config.healthCheckInterval.toString());
@@ -160,12 +52,6 @@ export function NetworkTab() {
     setTimeout(() => setSaveSuccess(false), 3000);
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
     <div className="space-y-6">
       {/* Status Bar */}
@@ -175,13 +61,6 @@ export function NetworkTab() {
           <p className="text-sm text-green-700 dark:text-green-400">
             ✓ Configuration saved. Refresh page to apply changes.
           </p>
-        </div>
-      )}
-
-      {serverError && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 rounded-md flex items-center gap-2">
-          <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-          <p className="text-sm text-red-700 dark:text-red-400">{serverError}</p>
         </div>
       )}
 
@@ -235,140 +114,6 @@ export function NetworkTab() {
                 </tr>
               </tbody>
             </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Environment Presets */}
-      <Card className="shadow-card border-purple-200 dark:border-purple-800">
-        <CardHeader>
-          <CardTitle className="text-base font-medium flex items-center">
-            <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-            Environment Presets
-          </CardTitle>
-          <p className="text-sm text-muted-foreground mt-2">
-            Quick-load optimized settings for your deployment environment
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-2 flex-wrap">
-            {["development", "staging", "production"].map((env) => (
-              <Button
-                key={env}
-                size="sm"
-                variant={config.environment === env ? "default" : "outline"}
-                onClick={() => handleLoadPreset(env as any)}
-                className={
-                  config.environment === env
-                    ? "bg-purple-600 hover:bg-purple-700"
-                    : ""
-                }
-              >
-                {env === "development" ? "🔧" : env === "staging" ? "🧪" : "🚀"}{" "}
-                {env.charAt(0).toUpperCase() + env.slice(1)}
-              </Button>
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground mt-3">
-            Current: <span className="font-semibold">{config.environment.toUpperCase()}</span>
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Backend Server Configuration */}
-      <Card className="shadow-card border-blue-200 dark:border-blue-800">
-        <CardHeader>
-          <CardTitle className="text-base font-medium flex items-center">
-            <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-            Backend Server Configuration
-          </CardTitle>
-          <p className="text-sm text-muted-foreground mt-2">
-            Configure the address of the backend API server. Changes require a page refresh to take effect.
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="server-url">Server URL</Label>
-            <div className="flex gap-2">
-              <Input
-                id="server-url"
-                value={config.serverUrl}
-                onChange={(e) => {
-                  setConfig(prev => ({ ...prev, serverUrl: e.target.value }));
-                  setServerError("");
-                }}
-                placeholder="http://localhost:8000"
-                className={serverError ? "border-red-500" : ""}
-              />
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => copyToClipboard(config.serverUrl)}
-                title="Copy URL"
-              >
-                <Copy className="h-4 w-4" />
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Format: http://hostname:port or https://hostname:port
-            </p>
-          </div>
-
-          {/* URL Examples by Environment */}
-          <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-md space-y-2">
-            <p className="text-xs font-semibold text-muted-foreground">URL Examples:</p>
-            <div className="space-y-1 text-xs">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Local Dev:</span>
-                <code className="bg-white dark:bg-slate-800 px-2 py-1 rounded font-mono">
-                  http://localhost:8000
-                </code>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Team Dev:</span>
-                <code className="bg-white dark:bg-slate-800 px-2 py-1 rounded font-mono">
-                  http://192.168.1.50:8000
-                </code>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">AWS Cape Town:</span>
-                <code className="bg-white dark:bg-slate-800 px-2 py-1 rounded font-mono">
-                  http://54.xyz.abc:8000
-                </code>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Domain:</span>
-                <code className="bg-white dark:bg-slate-800 px-2 py-1 rounded font-mono">
-                  https://api.example.com
-                </code>
-              </div>
-            </div>
-          </div>
-
-          {saveSuccess && (
-            <p className="text-sm text-green-600 dark:text-green-400">
-              ✓ Server URL saved successfully. Refresh page to apply changes.
-            </p>
-          )}
-
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              onClick={handleSaveServer}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              Save & Test
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setConfig(prev => ({ ...prev, serverUrl: "http://localhost:8000" }));
-                setServerError("");
-              }}
-            >
-              Reset to Default
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -563,18 +308,6 @@ export function NetworkTab() {
         </CardHeader>
         <CardContent>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Environment:</span>
-              <code className="font-mono bg-white dark:bg-slate-800 px-2 py-1 rounded">
-                {config.environment}
-              </code>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Server URL:</span>
-              <code className="font-mono bg-white dark:bg-slate-800 px-2 py-1 rounded">
-                {config.serverUrl}
-              </code>
-            </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">API Timeout:</span>
               <code className="font-mono bg-white dark:bg-slate-800 px-2 py-1 rounded">
