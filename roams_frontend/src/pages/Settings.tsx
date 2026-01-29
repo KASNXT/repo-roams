@@ -40,7 +40,7 @@ const Settings = () => {
               <SidebarTrigger className="-ml-1" />
               <TrendingUp className="h-6 w-6 text-primary shrink-0" />
               <div className="flex-1 min-w-0">
-                <h1 className="text-lg md:text-xl font-bold text-foreground truncate">ROAMS - Settings</h1>
+                <h1 className="text-lg md:text-xl font-bold text-foreground truncate">BROMS - Settings</h1>
                 <p className="text-xs text-muted-foreground hidden md:block">System Configuration & Management</p>
               </div>
             </div>

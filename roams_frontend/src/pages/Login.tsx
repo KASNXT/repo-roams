@@ -97,9 +97,9 @@ const LoginPage: React.FC = () => {
       <Card className="w-full max-w-md shadow-card relative z-10">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <img src="/roamslogo.png" alt="ROAMS Logo" className="h-16 w-16" />
+            <img src="/roamslogo.png" alt="BROMS Logo" className="h-16 w-16" />
           </div>
-          <CardTitle>Welcome to ROAMS</CardTitle>
+          <CardTitle>Welcome to BROMS</CardTitle>
           <CardDescription>
             Remote Operation & Monitoring System for Aquifer
           </CardDescription>

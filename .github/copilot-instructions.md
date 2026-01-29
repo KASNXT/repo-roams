@@ -1,7 +1,7 @@
-# ROAMS Project - AI Coding Agent Instructions
+# BROMS Project - AI Coding Agent Instructions
 
 ## Project Overview
-ROAMS (Remote Operations and Monitoring System) is a production-ready SCADA application monitoring water infrastructure via OPC UA. The system reads telemetry from remote stations, evaluates thresholds in real-time, generates alarms/notifications, controls equipment via boolean tags, and provides a React dashboard for operators.
+BROMS (Bore hole Remote Operation Monitoring System) is a production-ready SCADA application monitoring water infrastructure via OPC UA. The system reads telemetry from remote stations, evaluates thresholds in real-time, generates alarms/notifications, controls equipment via boolean tags, and provides a React dashboard for operators.
 
 **Stack**: Django 4.2 + DRF (backend) | React 18 + TypeScript + Vite (frontend) | PostgreSQL/SQLite | OPC UA (asyncua) | Redis
 

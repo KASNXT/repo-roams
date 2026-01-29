@@ -111,10 +111,10 @@ export function AppSidebar() {
       <SidebarContent className="flex flex-col h-full">
         {/* Logo Section */}
         <div className="flex items-center gap-2 p-4 border-b border-sidebar-border">
-          <img src="/roamslogo.png" alt="ROAMS Logo" className="h-12 w-12 md:h-12 md:w-12"/>
+          <img src="/roamslogo.png" alt="BROMS Logo" className="h-12 w-12 md:h-12 md:w-12"/>
           {!isCollapsed && (
             <div>
-              <h1 className="text-xl font-bold text-sidebar-foreground">ROAMS</h1>
+              <h1 className="text-xl font-bold text-sidebar-foreground">BROMS</h1>
               <p className="text-xs text-sidebar-foreground/60">Monitoring System</p>
             </div>
           )}
@@ -241,7 +241,7 @@ export function AppSidebar() {
         <div className="px-4 py-3 border-t border-sidebar-border">
           {!isCollapsed ? (
             <p className="text-xs text-center text-sidebar-foreground/60">
-              © 2026 ROAMS. All rights reserved.
+              © 2026 BROMS. All rights reserved.
             </p>
           ) : (
             <p className="text-xs text-center text-sidebar-foreground/60">

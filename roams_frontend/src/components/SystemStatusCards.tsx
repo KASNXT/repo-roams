@@ -227,7 +227,7 @@ export const SystemStatusCards = () => {
       <Card className={`hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200 dark:border-purple-800`}>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium text-purple-900 dark:text-purple-100">
-            ROAMS Server
+            BROMS Server
           </CardTitle>
           <div className={`p-2 bg-purple-200 dark:bg-purple-800 rounded-lg hover:scale-110 transition-transform duration-200`}>
             <Server className={`h-4 w-4 ${getStatusColor(statusData.serverStatus)}`} />

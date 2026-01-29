@@ -276,7 +276,7 @@ const Analysis = () => {
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
-    const filename = `ROAMS_REPORT_${selectedWell}_${dateRange?.from?.toISOString().split("T")[0] || "all"}_to_${dateRange?.to?.toISOString().split("T")[0] || "all"}.csv`;
+    const filename = `BROMS_REPORT_${selectedWell}_${dateRange?.from?.toISOString().split("T")[0] || "all"}_to_${dateRange?.to?.toISOString().split("T")[0] || "all"}.csv`;
     link.setAttribute("href", encodedUri);
     link.setAttribute("download", filename);
     document.body.appendChild(link);

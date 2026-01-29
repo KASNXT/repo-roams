@@ -24,7 +24,7 @@ export function SettingsLayout({ children }: SettingsLayoutProps) {
           </nav>
           
           <p className="text-sm text-muted-foreground mt-2 max-w-3xl">
-            Configure ROAMS operational and monitoring parameters. Changes affect all connected OPC UA clients and analysis modules.
+            Configure BROMS operational and monitoring parameters. Changes affect all connected OPC UA clients and analysis modules.
           </p>
         </div>
       </div>

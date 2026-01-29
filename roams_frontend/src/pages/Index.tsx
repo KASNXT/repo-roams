@@ -174,11 +174,11 @@ const Index: React.FC = () => {
           {/* Top Bar - Sticky on ALL screens */}
           <header className="sticky top-0 z-50 flex flex-row h-14 md:h-16 shrink-0 items-center gap-2 border-b bg-gradient-surface/95 backdrop-blur supports-[backdrop-filter]:bg-gradient-surface/80 px-2 md:px-4 shadow-sm">
             <SidebarTrigger className="-ml-1" />
-            <img src="/roamslogo.png" alt="ROAMS Logo" className="h-9 md:h-12 w-9 md:w-12 shrink-0" />
+            <img src="/roamslogo.png" alt="BROMS Logo" className="h-9 md:h-12 w-9 md:w-12 shrink-0" />
             <div className="flex-1 min-w-0">
-              <h1 className="text-sm md:text-xl font-bold text-foreground truncate">ROAMS</h1>
+              <h1 className="text-sm md:text-xl font-bold text-foreground truncate">BROMS</h1>
               <p className="text-[10px] md:text-xs text-muted-foreground truncate">
-                Remote Operation & Monitoring System For Aquifer
+                Bore hole Remote Operation Monitoring System
               </p>
             </div>
             <div className="flex items-center gap-1 md:gap-3">

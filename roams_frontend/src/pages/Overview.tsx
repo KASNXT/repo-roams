@@ -128,7 +128,7 @@ const Overview = () => {
               <SidebarTrigger className="-ml-1" />
               <TrendingUp className="h-5 md:h-6 w-5 md:w-6 text-primary shrink-0" />
               <div className="flex-1 min-w-0">
-                <h1 className="text-lg md:text-xl font-bold text-foreground truncate">ROAMS - Overview</h1>
+                <h1 className="text-lg md:text-xl font-bold text-foreground truncate">BROMS - Overview</h1>
                 <p className="text-xs text-muted-foreground hidden md:block">
                   System Overview & Performance Summary
                 </p>

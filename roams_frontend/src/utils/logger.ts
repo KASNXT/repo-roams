@@ -59,4 +59,4 @@ export function createLogger(moduleName: string): Logger {
  * Global logger instance
  * Use for application-level logging
  */
-export const globalLogger = createLogger('ROAMS');
+export const globalLogger = createLogger('BROMS');

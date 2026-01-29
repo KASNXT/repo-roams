@@ -23,9 +23,13 @@ from django.contrib.auth.views import LogoutView
 from roams_opcua_mgr.views import ForceDashboardLoginView
 from django.shortcuts import redirect
 from rest_framework.authtoken.views import obtain_auth_token  # ✅ import DRF's token view
+from django.views.generic import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # Favicon
+    path('favicon.ico', RedirectView.as_view(url='/static/img/favicon.ico', permanent=True)),
 
     # Login & Logout
     path("login/", ForceDashboardLoginView.as_view(), name="login"),

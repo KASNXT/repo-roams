@@ -1,0 +1,308 @@
+================================================================================
+OPC UA AUTO-REFRESH INVESTIGATION & FIXES - FINAL REPORT
+================================================================================
+Date: January 3, 2026
+Investigation: OPC UA servers not connecting and auto-refresh status inaccurate
+
+================================================================================
+PROBLEMS DISCOVERED
+================================================================================
+
+1. MONITOR THREAD NEVER STARTED
+   Location: roams_opcua_mgr/opcua_client.py - run() method
+   Issue: Connection monitor was defined but never called
+   Impact: Status updates only happen once at startup
+   
+2. NO HEALTH CHECK MECHANISM
+   Issue: Once marked Connected, no verification of actual connection
+   Impact: Dead connections stay marked as "Connected" indefinitely
+   
+3. CONNECTION STATUS STUCK IN DATABASE
+   Example: "Lutete Bore hole" shows Connected but:
+            - ZERO reads in last hour
+            - Last data was 6108 minutes ago (4+ days)
+            - No actual data being collected
+   
+4. NO AUTOMATIC RECOVERY
+   Issue: If network drops, no automatic reconnection attempt
+   Impact: Stale connections with no recovery mechanism
+
+5. INSUFFICIENT ERROR HANDLING
+   Issue: Failed database updates silently ignored
+   Impact: Transient DB errors cause permanent status inconsistency
+
+================================================================================
+CURRENT SERVER STATUS (BEFORE FIXES)
+================================================================================
+
+mityana bh1:
+  Endpoint: opc.tcp://kasmic.ddns.net:4840
+  Status in DB: faulty ✓ (correct - network unreachable)
+  Nodes Configured: 0
+  Recent Reads: 0
+
+testing:
+  Endpoint: opc.tcp://KASMIC_BA:53530/urn:KASMIC_BA:OPCUA:SimulationServer.prosy_test
+  Status in DB: Connected ❌ (WRONG - endpoint URL is invalid)
+  Error: BadTcpEndpointUrlInvalid
+  Nodes Configured: 4
+  Recent Reads: 0
+  Correct Endpoint: opc.tcp://KASMIC_BA:53530/OPCUA/SimulationServer
+
+Lutete Bore hole:
+  Endpoint: opc.tcp://KASMIC_BA:53530/OPCUA/SimulationServer
+  Status in DB: Connected ❌ (STALE - no recent data)
+  Connected: YES ✓ (verification test succeeded)
+  Nodes Configured: 6
+  Recent Reads: 0
+  Last Data: 6108 minutes ago (4+ DAYS!)
+
+================================================================================
+ROOT CAUSES
+================================================================================
+
+1. run() method calls connect() but never starts monitor_connection() thread
+   → Status only updated once at startup
+
+2. No connection health checks after initial connection
+   → Dead connections never detected
+
+3. Connection monitor exists but not integrated into client lifecycle
+   → Method defined but never called
+
+4. No retry logic for database updates
+   → Single failed update leaves status inconsistent
+
+================================================================================
+FIXES APPLIED
+================================================================================
+
+File: roams_opcua_mgr/opcua_client.py
+
+CHANGE 1: Enhanced run() Method
+─────────────────────────────────
+BEFORE:
+  def run(self):
+    self.connect()
+    while not self.connected:
+      time.sleep(30)
+      self.connect()
+    # ❌ Monitor thread never started, exits when connected
+
+AFTER:
+  def run(self):
+    self.connect()
+    while not self.connected:
+      time.sleep(30)
+      self.connect()
+    
+    # ✅ START MONITORING THREAD
+    monitor_thread = threading.Thread(target=self.monitor_connection, daemon=True)
+    monitor_thread.start()
+    
+    # Keep main thread alive
+    while True:
+      time.sleep(60)
+
+IMPACT: Monitor thread now runs continuously checking connection health
+
+
+CHANGE 2: Improved monitor_connection() Method
+──────────────────────────────────────────────
+BEFORE:
+  def monitor_connection(self):
+    while True:
+      self.config.refresh_from_db()
+      if not self.config.active and self.connected:
+        self.disconnect()
+        return
+      if not self.connected and self.config.active:
+        self.reconnect()
+      time.sleep(35)
+      # ❌ No health check, no reconnection on failure, no error handling
+
+AFTER:
+  def monitor_connection(self):
+    logger.info(f"📡 Monitor started for {self.config.station_name}")
+    
+    while True:
+      try:
+        self.config.refresh_from_db()
+        
+        if not self.config.active and self.connected:
+          self.disconnect()
+          return
+        
+        if self.config.active and not self.connected:
+          self.reconnect()
+        
+        # ✅ HEALTH CHECK: Verify connection still alive
+        if self.connected and self.client:
+          try:
+            server_node = self.client.get_node("i=20")
+            _ = server_node.get_display_name()
+            
+            # Update status if needed
+            if self.config.connection_status != "Connected":
+              self.update_connection_status("Connected")
+          
+          except Exception as e:
+            # Connection is dead - reconnect
+            logger.warning(f"Health check failed: {e}")
+            self.connected = False
+            self.update_connection_status("Disconnected")
+            self.reconnect()
+      
+      except Exception as e:
+        logger.error(f"Monitor error: {e}")
+      
+      time.sleep(35)
+
+IMPACT: 
+  - Health check every 35 seconds
+  - Dead connections detected and fixed automatically
+  - Better error handling and logging
+
+
+CHANGE 3: Better Status Update with Retry Logic
+────────────────────────────────────────────────
+BEFORE:
+  def update_connection_status(self, status):
+    try:
+      self.config.refresh_from_db()
+      self.config.connection_status = status
+      self.config.save(update_fields=["connection_status"])
+    except Exception:
+      # ❌ Single attempt, failures silently ignored
+
+AFTER:
+  def update_connection_status(self, status):
+    max_retries = 3
+    for attempt in range(max_retries):
+      try:
+        self.config.refresh_from_db()
+        self.config.connection_status = status
+        
+        with transaction.atomic():
+          self.config.save(update_fields=["connection_status"])
+          logger.info(f"Status updated to '{status}'")
+          return True
+      
+      except DatabaseError as db_err:
+        logger.warning(f"DB error (attempt {attempt + 1}/3): {db_err}")
+        if attempt < max_retries - 1:
+          time.sleep(1)  # Wait before retry
+          continue
+        return False
+      
+      except Exception as e:
+        logger.error(f"Error: {e}")
+        return False
+
+IMPACT:
+  - Retries failed updates up to 3 times
+  - Waits 1 second between retries
+  - Better error logging
+  - Returns success/failure status
+
+================================================================================
+EXPECTED BEHAVIOR AFTER RESTART
+================================================================================
+
+Timeline:
+  0 sec     → OPC UA client connects to server
+  ~5 sec    → Monitor thread starts
+  35 sec    → First health check (verify connection alive)
+  70 sec    → Second health check
+  ...
+  
+  If connection drops:
+  ~ 35 sec  → Health check fails, marks as Disconnected
+  ~ 36 sec  → Reconnection attempt begins (1 sec backoff)
+  ~ 38 sec  → Retry (2 sec backoff)
+  ~ 42 sec  → Retry (4 sec backoff)
+  ... up to 60 sec max backoff
+
+Benefits:
+  ✅ Real-time status updates
+  ✅ Automatic recovery on network failure
+  ✅ No stale connections
+  ✅ Better logging for debugging
+  ✅ Reliable database updates
+
+================================================================================
+NEXT STEPS FOR CONFIGURATION FIXES
+================================================================================
+
+1. Fix "testing" server endpoint URL
+   Current: opc.tcp://KASMIC_BA:53530/urn:KASMIC_BA:OPCUA:SimulationServer.prosy_test
+   Change to: opc.tcp://KASMIC_BA:53530/OPCUA/SimulationServer
+   
+   In Django Admin:
+   - Go to OPC UA Servers
+   - Edit "testing" configuration
+   - Update Endpoint URL
+   - Save
+
+2. Check "mityana bh1" network connectivity
+   Issue: Network is unreachable to kasmic.ddns.net
+   Actions:
+   - Ping kasmic.ddns.net from your server
+   - Check firewall rules
+   - Verify network routing
+   - Once fixed, status should automatically update
+
+3. Verify "Lutete Bore hole" data collection
+   - Check that read_data.py is collecting new readings
+   - Monitor OpcUaReadLog table for new entries
+   - Should see new data every 30-60 seconds
+
+================================================================================
+TESTING AFTER DEPLOYMENT
+================================================================================
+
+1. Check Monitor is Running
+   tail -f logs/django.log | grep "Monitor"
+   Expected: "Monitor started for Lutete Bore hole"
+
+2. Verify Status is Accurate
+   python manage.py shell
+   from roams_opcua_mgr.models import OpcUaClientConfig
+   c = OpcUaClientConfig.objects.get(station_name="Lutete Bore hole")
+   print(c.connection_status)  # Should be "Connected"
+
+3. Check Recent Data
+   from roams_opcua_mgr.models import OpcUaReadLog
+   OpcUaReadLog.objects.filter(
+     node__client_config__station_name="Lutete Bore hole"
+   ).latest('timestamp').timestamp
+   # Should be within last 1-2 minutes
+
+4. Simulate Failure
+   - Stop OPC UA server
+   - Within 35 sec, status should change to "Disconnected"
+   - Restart server
+   - Within 60 sec, status should return to "Connected"
+
+================================================================================
+SUMMARY
+================================================================================
+
+What Was Fixed:
+  ✅ Monitor thread now starts and runs continuously
+  ✅ Health checks every 35 seconds detect failures
+  ✅ Auto-reconnection with exponential backoff
+  ✅ Database updates with retry logic
+  ✅ Real-time status accuracy
+
+What Still Needs Configuration:
+  ⚠️ Fix "testing" endpoint URL (invalid path)
+  ⚠️ Verify "mityana bh1" network connectivity
+
+Expected Result:
+  → OPC UA status is now accurate and real-time
+  → Connections automatically recover from failures
+  → No more stale "Connected" status
+  → Complete visibility into OPC UA server health
+
+================================================================================
