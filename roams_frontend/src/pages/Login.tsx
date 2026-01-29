@@ -101,7 +101,7 @@ const LoginPage: React.FC = () => {
           </div>
           <CardTitle>Welcome to BROMS</CardTitle>
           <CardDescription>
-            Remote Operation & Monitoring System for Aquifer
+            Bore hole Remote Operation Monitoring System
           </CardDescription>
         </CardHeader>
 
