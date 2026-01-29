@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
+import { getServerUrl } from "@/services/api";
 
 interface AlarmRetentionPolicy {
   id: number;
