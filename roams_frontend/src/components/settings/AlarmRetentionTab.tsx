@@ -29,7 +29,7 @@ export const AlarmRetentionTab = () => {
   const [error, setError] = useState<string | null>(null);
 
   const api = axios.create({
-    baseURL: "http://localhost:8000/api",
+    baseURL: `${getServerUrl()}/api`,
     headers: { "Content-Type": "application/json" },
   });
 

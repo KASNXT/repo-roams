@@ -15,6 +15,7 @@ import {
 import type { DateRange } from "react-day-picker";
 import { isWithinInterval, parseISO } from "date-fns";
 import axios from "axios";
+import { getServerUrl } from "@/services/api";
 
 interface AlarmsTableProps {
   searchTerm: string;
@@ -37,7 +38,7 @@ interface Alarm {
 const fetchAlarmsFromDatabase = async (_wellId: string, _dateRange?: DateRange): Promise<Alarm[]> => {
   try {
     const api = axios.create({
-      baseURL: "http://localhost:8000/api",
+      baseURL: `${getServerUrl()}/api`,
       headers: {
         "Content-Type": "application/json",
       },

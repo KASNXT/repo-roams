@@ -4,6 +4,7 @@ import { AlertCircle, Bell, Clock, AlertTriangle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import axios from "axios";
+import { getServerUrl } from "@/services/api";
 
 interface Alarm {
   id: number;
@@ -36,7 +37,7 @@ export const AlarmBanner = ({
       setError(null);
 
       const api = axios.create({
-        baseURL: "http://localhost:8000/api",
+        baseURL: `${getServerUrl()}/api`,
         headers: { "Content-Type": "application/json" },
       });
 

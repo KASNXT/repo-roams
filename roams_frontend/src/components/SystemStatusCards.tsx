@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Activity, AlertTriangle, Server, MapPin, Loader2 } from "lucide-react";
 import axios from "axios";
+import { getServerUrl } from "@/services/api";
 import { toast } from "sonner";
 
 interface SystemStatusData {
@@ -35,7 +36,7 @@ export const SystemStatusCards = () => {
 
         // Create axios instance with token
         const api = axios.create({
-          baseURL: "http://localhost:8000/api",
+          baseURL: `${getServerUrl()}/api`,
           headers: {
             "Content-Type": "application/json",
           },

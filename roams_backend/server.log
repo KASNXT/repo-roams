@@ -1,17 +1,90 @@
-WARNING 2025-10-01 18:40:14,684 opcua_client ⚠️ OPC UA client check already running. Skipping duplicate execution.
-ERROR 2025-10-01 18:40:14,691 opcua_client  Connection failed: [Errno -5] No address associated with hostname
-WARNING 2025-10-01 18:40:14,698 opcua_client 🔄 Retrying connection to mityana bh1...
-WARNING 2025-10-01 18:40:22,630 opcua_client ⚠️ OPC UA client check already running. Skipping duplicate execution.
-WARNING 2025-10-01 18:40:22,635 opcua_client ⚠️ OPC UA client check already running. Skipping duplicate execution.
-ERROR 2025-10-01 18:40:22,644 opcua_client  Connection failed: [Errno 22] Invalid argument
-ERROR 2025-10-01 18:40:22,645 opcua_client  Connection failed: [Errno 22] Invalid argument
-WARNING 2025-10-01 18:40:22,652 opcua_client 🔄 Retrying connection to testing...
-WARNING 2025-10-01 18:40:22,656 opcua_client 🔄 Retrying connection to Bombo bh1...
-Performing system checks...
-
-WARNING 2025-10-01 18:40:24,715 opcua_client ⚠️ mityana bh1: Failed to disconnect stale client: 'NoneType' object has no attribute 'socket'
-WARNING 2025-10-01 18:40:24,841 opcua_client ⚠️ OPC UA client check already running. Skipping duplicate execution.
-ERROR 2025-10-01 18:40:24,857 opcua_client  Connection failed: [Errno -5] No address associated with hostname
-WARNING 2025-10-01 18:40:24,866 opcua_client 🔄 Retrying connection to mityana bh1...
-System check identified no issues (0 silenced).
-Error: That port is already in use.
+INFO 2026-01-21 18:11:12,479 opcua_client ⏳ Waiting for database to be ready...
+INFO 2026-01-21 18:11:22,499 opcua_client 🔎 Total server configs found: 3
+INFO 2026-01-21 18:11:22,511 opcua_client 🟢 Found 3 active servers:
+INFO 2026-01-21 18:11:22,515 opcua_client    📡 Ggaba_FAT (opc.tcp://192.168.1.114:4840)
+INFO 2026-01-21 18:11:22,519 auth_ua [32m✅ Using Anonymous Authentication[0m
+INFO 2026-01-21 18:11:22,520 opcua_client    📡 testing (opc.tcp://KASMIC_BA:53530/OPCUA/SimulationServer)
+INFO 2026-01-21 18:11:22,523 opcua_client [36m🔐 Using Anonymous Authentication for Ggaba_FAT[0m
+INFO 2026-01-21 18:11:22,527 auth_ua [32m✅ Using Anonymous Authentication[0m
+INFO 2026-01-21 18:11:22,527 opcua_client    📡 Lutete Bore hole (opc.tcp://KASMIC_BA:53530/OPCUA/SimulationServer)
+INFO 2026-01-21 18:11:22,531 ua_client opening connection
+INFO 2026-01-21 18:11:22,536 opcua_client [36m🔐 Using Anonymous Authentication for testing[0m
+INFO 2026-01-21 18:11:22,541 auth_ua [32m✅ Using Anonymous Authentication[0m
+INFO 2026-01-21 18:11:22,541 opcua_client 🔄 Next server status check in 30 seconds...
+INFO 2026-01-21 18:11:22,547 ua_client opening connection
+INFO 2026-01-21 18:11:22,550 ua_client Thread started
+INFO 2026-01-21 18:11:22,552 opcua_client [36m🔐 Using Anonymous Authentication for Lutete Bore hole[0m
+INFO 2026-01-21 18:11:22,556 read_data 🚀 Node reading thread started.
+INFO 2026-01-21 18:11:22,568 ua_client opening connection
+INFO 2026-01-21 18:11:22,572 connection received header: Header(type:b'ACK', chunk_type:b'F', body_size:20, channel:0)
+INFO 2026-01-21 18:11:22,574 ua_client open_secure_channel
+INFO 2026-01-21 18:11:22,600 connection received header: Header(type:b'OPN', chunk_type:b'F', body_size:124, channel:2171333490)
+INFO 2026-01-21 18:11:22,602 ua_client create_session
+INFO 2026-01-21 18:11:22,761 connection received header: Header(type:b'MSG', chunk_type:b'F', body_size:2951, channel:2171333490)
+INFO 2026-01-21 18:11:22,768 ua_client activate_session
+INFO 2026-01-21 18:11:22,795 connection received header: Header(type:b'MSG', chunk_type:b'F', body_size:84, channel:2171333490)
+INFO 2026-01-21 18:11:22,821 signals 🔄 Server 'Ggaba_FAT' changed. Restarting OPC UA clients in background...
+WARNING 2026-01-21 18:11:22,823 opcua_client ⚠️ OPC UA client check already running. Skipping duplicate execution.
+INFO 2026-01-21 18:11:22,827 signals 🔄 Server 'Ggaba_FAT' changed. Restarting OPC UA clients in background...
+INFO 2026-01-21 18:11:22,827 signals ✅ OPC UA clients restart completed
+WARNING 2026-01-21 18:11:22,829 opcua_client ⚠️ OPC UA client check already running. Skipping duplicate execution.
+INFO 2026-01-21 18:11:22,829 opcua_client [36m✅ Ggaba_FAT: Status updated to 'Connected'[0m
+INFO 2026-01-21 18:11:22,832 signals ✅ OPC UA clients restart completed
+INFO 2026-01-21 18:11:22,836 opcua_client [32m✅ Connected to Ggaba_FAT (opc.tcp://192.168.1.114:4840)[0m
+INFO 2026-01-21 18:11:22,838 ua_client create_subscription
+INFO 2026-01-21 18:11:22,868 connection received header: Header(type:b'MSG', chunk_type:b'F', body_size:60, channel:2171333490)
+INFO 2026-01-21 18:11:22,870 ua_client _create_subscription_callback
+INFO 2026-01-21 18:11:22,873 ua_client publish
+INFO 2026-01-21 18:11:22,875 ua_client publish
+INFO 2026-01-21 18:11:22,878 ua_client create_monitored_items
+INFO 2026-01-21 18:11:22,901 connection received header: Header(type:b'MSG', chunk_type:b'F', body_size:71, channel:2171333490)
+WARNING 2026-01-21 18:11:22,910 opcua_client [33m⚠️ Ggaba_FAT: Keep-alive subscription failed: "The attribute is not supported for the specified Node."(BadAttributeIdInvalid)[0m
+INFO 2026-01-21 18:11:22,913 opcua_client [36m🔄 Starting connection monitor for Ggaba_FAT...[0m
+INFO 2026-01-21 18:11:22,916 opcua_client [36m📡 Monitor started for Ggaba_FAT[0m
+INFO 2026-01-21 18:11:22,917 opcua_client [32m✅ Connection monitor started for Ggaba_FAT[0m
+INFO 2026-01-21 18:11:22,943 ua_client read
+INFO 2026-01-21 18:11:22,963 connection received header: Header(type:b'MSG', chunk_type:b'F', body_size:68, channel:2171333490)
+WARNING 2026-01-21 18:11:30,567 opcua_client [33m⚠️ Connection attempt 1/3 failed for testing: [Errno 22] Invalid argument. Retrying in 1s...[0m
+WARNING 2026-01-21 18:11:30,606 opcua_client [33m⚠️ Connection attempt 1/3 failed for Lutete Bore hole: [Errno 22] Invalid argument. Retrying in 1s...[0m
+INFO 2026-01-21 18:11:31,570 ua_client close_session
+INFO 2026-01-21 18:11:31,573 ua_client close_secure_channel
+INFO 2026-01-21 18:11:31,578 ua_client Request to close socket received
+INFO 2026-01-21 18:11:31,583 auth_ua [32m✅ Using Anonymous Authentication[0m
+INFO 2026-01-21 18:11:31,584 opcua_client [36m🔐 Using Anonymous Authentication for testing[0m
+INFO 2026-01-21 18:11:31,587 ua_client opening connection
+INFO 2026-01-21 18:11:31,649 ua_client close_session
+INFO 2026-01-21 18:11:31,651 ua_client close_secure_channel
+INFO 2026-01-21 18:11:31,657 ua_client Request to close socket received
+INFO 2026-01-21 18:11:31,662 auth_ua [32m✅ Using Anonymous Authentication[0m
+INFO 2026-01-21 18:11:31,664 opcua_client [36m🔐 Using Anonymous Authentication for Lutete Bore hole[0m
+INFO 2026-01-21 18:11:31,666 ua_client opening connection
+INFO 2026-01-21 18:11:37,126 connection received header: Header(type:b'MSG', chunk_type:b'F', body_size:73, channel:2171333490)
+INFO 2026-01-21 18:11:37,132 ua_client call_publish_callback
+INFO 2026-01-21 18:11:37,145 subscription Publish callback called with result: PublishResult(SubscriptionId:{self.SubscriptionId}, AvailableSequenceNumbers:{self.AvailableSequenceNumbers}, MoreNotifications:{self.MoreNotifications}, NotificationMessage:{self.NotificationMessage}, Results:{self.Results}, DiagnosticInfos:{self.DiagnosticInfos})
+INFO 2026-01-21 18:11:37,155 ua_client publish
+WARNING 2026-01-21 18:11:38,229 opcua_client [33m⚠️ Connection attempt 2/3 failed for testing: [Errno 22] Invalid argument. Retrying in 2s...[0m
+WARNING 2026-01-21 18:11:38,308 opcua_client [33m⚠️ Connection attempt 2/3 failed for Lutete Bore hole: [Errno 22] Invalid argument. Retrying in 2s...[0m
+INFO 2026-01-21 18:11:40,269 ua_client close_session
+INFO 2026-01-21 18:11:40,275 ua_client close_secure_channel
+INFO 2026-01-21 18:11:40,287 ua_client Request to close socket received
+INFO 2026-01-21 18:11:40,306 auth_ua [32m✅ Using Anonymous Authentication[0m
+INFO 2026-01-21 18:11:40,315 opcua_client [36m🔐 Using Anonymous Authentication for testing[0m
+INFO 2026-01-21 18:11:40,319 ua_client close_session
+INFO 2026-01-21 18:11:40,324 ua_client opening connection
+INFO 2026-01-21 18:11:40,331 ua_client close_secure_channel
+INFO 2026-01-21 18:11:40,351 ua_client Request to close socket received
+INFO 2026-01-21 18:11:40,363 auth_ua [32m✅ Using Anonymous Authentication[0m
+INFO 2026-01-21 18:11:40,367 opcua_client [36m🔐 Using Anonymous Authentication for Lutete Bore hole[0m
+INFO 2026-01-21 18:11:40,372 ua_client opening connection
+INFO 2026-01-21 18:11:41,171 ua_client read
+INFO 2026-01-21 18:11:41,197 connection received header: Header(type:b'MSG', chunk_type:b'F', body_size:59, channel:2171333490)
+INFO 2026-01-21 18:11:41,223 ua_client read
+INFO 2026-01-21 18:11:41,247 connection received header: Header(type:b'MSG', chunk_type:b'F', body_size:62, channel:2171333490)
+INFO 2026-01-21 18:11:41,270 read_data 📥 [READ] Ggaba_FAT | VOLTAGE = 116.91710662841797
+INFO 2026-01-21 18:11:41,284 signals 📢 Signal triggered for new breach: VOLTAGE
+INFO 2026-01-21 18:11:41,289 notifications 📢 Processing notifications for Warning breach: VOLTAGE
+WARNING 2026-01-21 18:11:41,303 notifications ⚠️ No email recipients found for VOLTAGE breach (Warning)
+INFO 2026-01-21 18:11:41,308 notifications ✅ Notification #1 sent for Warning breach: VOLTAGE
+WARNING 2026-01-21 18:11:41,313 services 🚨 [Warning] Threshold breach for VOLTAGE: value=116.91710662841797
+INFO 2026-01-21 18:11:41,318 notifications 📢 Processing notifications for Warning breach: VOLTAGE
+WARNING 2026-01-21 18:11:41,328 read_data ⚠️ Warning breach for VOLTAGE: value=116.91710662841797

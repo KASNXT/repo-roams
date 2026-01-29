@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import type { DateRange } from "react-day-picker";
+import { getServerUrl } from "@/services/api";
 
 export interface TelemetryPoint {
   timestamp: string;
@@ -22,7 +23,7 @@ export const useTelemetryData = (stationId: string, dateRange?: DateRange) => {
     if (dateRange?.to) params.to = dateRange.to.toISOString();
 
     axios
-      .get(`http://localhost:8000/api/telemetry/`, {
+      .get(`${getServerUrl()}/api/telemetry/`, {
         params: {
           station: stationId,
           ...params,
