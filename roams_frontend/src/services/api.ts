@@ -1,20 +1,17 @@
 // roams_frontend/src/services/api.ts
 import axios from "axios";
 
-// Get server URL from localStorage or auto-detect based on environment
+// Get server URL based on hostname (no localStorage dependency)
 export const getServerUrl = (): string => {
   if (typeof window !== "undefined") {
-    // Production: ALWAYS use same domain as frontend (NGINX proxies /api to Django)
-    // This prevents localStorage from breaking production deployments
-    if (import.meta.env.PROD) {
-      return window.location.origin;
+    const hostname = window.location.hostname;
+    
+    // VPS production
+    if (hostname === '144.91.79.167') {
+      return 'http://144.91.79.167:8000';
     }
     
-    // Development: Check localStorage first (allows manual override via Settings page)
-    const stored = localStorage.getItem("roams_server_url");
-    if (stored) return stored;
-    
-    // Development fallback: Default to localhost backend
+    // Local development
     return "http://localhost:8000";
   }
   return "http://localhost:8000";
