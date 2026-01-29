@@ -1,0 +1,190 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Delete Progress - {{ opts.verbose_name_plural|capfirst }}{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h1>Deleting {{ object_name }}</h1>
+    
+    <style>
+        .deletion-progress-container {
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            height: 30px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 20px 0;
+            border: 1px solid #dee2e6;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .progress-label {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .progress-percentage {
+            color: #666;
+        }
+        
+        .deletion-status {
+            padding: 10px;
+            margin: 20px 0;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        
+        .deletion-status.running {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .deletion-status.completed {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .deletion-status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(40, 167, 69, 0.3);
+            border-radius: 50%;
+            border-top-color: #28a745;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .message {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+    </style>
+    
+    <div class="deletion-progress-container">
+        <div class="progress-info">
+            <span class="progress-label" id="status-label">Preparing deletion...</span>
+            <span class="progress-percentage" id="percentage">0%</span>
+        </div>
+        
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="progress-bar" style="width: 0%;">
+                <span id="progress-text">0%</span>
+            </div>
+        </div>
+        
+        <div class="deletion-status running" id="status-message">
+            <div class="message">
+                <div class="spinner"></div>
+                <span id="status-text">Starting deletion process...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="application/json" id="config-data">
+{
+    "configId": {{ config_id }}
+}
+</script>
+
+<script>
+    // Extract config data from JSON script tag
+    const configData = JSON.parse(document.getElementById('config-data').textContent);
+    const configId = configData.configId;
+    let isComplete = false;
+    
+    function updateProgress() {
+        if (isComplete) return;
+        
+        fetch(`/admin/roams_opcua_mgr/opcuaclientconfig/delete-progress/${configId}/`)
+            .then(response => response.json())
+            .then(data => {
+                const percent = data.percent || 0;
+                const stage = data.stage || 'Processing...';
+                
+                // Update progress bar
+                document.getElementById('progress-bar').style.width = percent + '%';
+                document.getElementById('progress-text').textContent = percent + '%';
+                document.getElementById('percentage').textContent = percent + '%';
+                
+                // Update status label and text
+                document.getElementById('status-label').textContent = stage;
+                document.getElementById('status-text').textContent = stage;
+                
+                // Check if complete
+                if (percent >= 100) {
+                    isComplete = true;
+                    document.getElementById('status-message').className = 'deletion-status completed';
+                    document.querySelector('.spinner').style.display = 'none';
+                    document.getElementById('status-text').textContent = 'Deletion completed successfully!';
+                    
+                    // Redirect after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = '/admin/roams_opcua_mgr/opcuaclientconfig/';
+                    }, 2000);
+                } else if (percent === 0 && stage.includes('Error')) {
+                    isComplete = true;
+                    document.getElementById('status-message').className = 'deletion-status error';
+                    document.querySelector('.spinner').style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching progress:', error);
+            });
+    }
+    
+    // Poll every 500ms
+    const interval = setInterval(updateProgress, 500);
+    
+    // Stop polling after 1 hour
+    setTimeout(() => {
+        clearInterval(interval);
+    }, 3600000);
+    
+    // Initial update
+    updateProgress();
+</script>
+{% endblock %}

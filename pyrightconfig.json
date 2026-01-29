@@ -1,0 +1,8 @@
+{
+  "pythonVersion": "3.12",
+  "pythonPlatform": "Linux",
+  "venv": "roams_backend/venv",
+  "include": ["roams_backend", "roams_frontend"],
+  "exclude": ["**/node_modules", "**/__pycache__", "**/.*"],
+  "typeCheckingMode": "basic"
+}

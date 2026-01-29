@@ -5,14 +5,29 @@ from django.core.validators import RegexValidator
 
 class UserProfile(models.Model):
     """
-    Extended user profile to store additional contact information.
+    Extended user profile to store additional contact information and role.
     Links to Django's built-in User model.
     """
+    ROLE_CHOICES = [
+        ('viewer', 'Viewer (Read-only access)'),
+        ('technician', 'Technician (Equipment control)'),
+        ('operator', 'Operator (Full access to equipment)'),
+        ('admin', 'Admin (System admin)'),
+        ('superuser', 'Superuser (Full system access)'),
+    ]
+    
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
         related_name='profile',
         help_text="Link to Django user account"
+    )
+    
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default='viewer',
+        help_text="User's role in the system"
     )
     
     phone_number = models.CharField(

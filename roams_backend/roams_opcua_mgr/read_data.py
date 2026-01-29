@@ -20,11 +20,36 @@ def get_opcua_models():
 
 
 
+def should_log_reading(node_config, value):
+    """
+    Determine if we should log this reading based on sampling configuration.
+    
+    Returns True if:
+    - sample_on_whole_number_change is False (always log), OR
+    - The whole number part of the value differs from last_whole_number
+    """
+    if not getattr(node_config, "sample_on_whole_number_change", True):
+        # If disabled, always log
+        return True
+    
+    try:
+        numeric_value = float(value)
+        current_whole = int(numeric_value)
+        last_whole = node_config.last_whole_number
+        
+        # Log if we don't have a previous value OR if whole number changed
+        return last_whole is None or current_whole != last_whole
+    except (TypeError, ValueError):
+        # Non-numeric values always get logged
+        return True
+
+
 def read_and_log_nodes(active_clients):
     """
     Read values from all nodes in all active clients and log them.
     Distinguish alarm nodes (is_alarm=True) from parameter nodes.
     Evaluate thresholds and log breaches.
+    Only log parameter nodes if their whole number value changes (if configured).
     """
     close_old_connections()
     OPCUANode, OpcUaReadLog, AlarmLog = get_opcua_models()
@@ -37,7 +62,7 @@ def read_and_log_nodes(active_clients):
             try:
                 nodes = OPCUANode.objects.filter(
                     client_config=client_handler.config
-                ).only("id", "node_id", "tag_name", "is_alarm")
+                ).only("id", "node_id", "tag_name", "is_alarm", "sample_on_whole_number_change", "last_whole_number")
 
                 if not nodes.exists():
                     logger.info(f"ℹ️ No nodes configured for {station_name}.")
@@ -54,13 +79,20 @@ def read_and_log_nodes(active_clients):
                         for attempt in range(max_retries):
                             try:
                                 with transaction.atomic():
+                                    # ✅ Round numeric values to 2 decimal places
+                                    try:
+                                        if isinstance(value, (int, float)):
+                                            value = round(float(value), 2)
+                                    except (TypeError, ValueError):
+                                        pass  # Keep non-numeric values as-is
+                                    
                                     # ✅ Update last value and time
                                     node_config.last_value = value
                                     node_config.last_updated = now()
-                                    node_config.save(update_fields=["last_value", "last_updated"])
-
+                                    
                                     # 🚨 If it's an alarm node, log differently
                                     if getattr(node_config, "is_alarm", False):
+                                        # Always log alarm nodes
                                         AlarmLog.objects.create(
                                             node=node_config,
                                             station_name=station_name,
@@ -72,25 +104,38 @@ def read_and_log_nodes(active_clients):
                                         logger.warning(
                                             f"🚨 [ALARM] {station_name} | {node_config.tag_name} = {value}"
                                         )
+                                        node_config.save(update_fields=["last_value", "last_updated"])
                                     else:
-                                        # 🧾 Normal node reading log
-                                        OpcUaReadLog.objects.create(
-                                            client_config=client_handler.config,
-                                            node=node_config,
-                                            value=str(value),
-                                            timestamp=now(),
-                                        )
-                                        logger.info(
-                                            f"📥 [READ] {station_name} | {node_config.tag_name} = {value}"
-                                        )
+                                        # 🧾 For parameter nodes, check if we should log based on whole number changes
+                                        should_log = should_log_reading(node_config, value)
                                         
-                                        # 🚨 Evaluate thresholds (only for non-alarm nodes)
+                                        if should_log:
+                                            OpcUaReadLog.objects.create(
+                                                client_config=client_handler.config,
+                                                node=node_config,
+                                                value=str(value),
+                                                timestamp=now(),
+                                            )
+                                            logger.info(
+                                                f"📥 [READ] {station_name} | {node_config.tag_name} = {value}"
+                                            )
+                                            
+                                            # Update the last whole number value
+                                            try:
+                                                numeric_value = float(value)
+                                                node_config.last_whole_number = int(numeric_value)
+                                            except (TypeError, ValueError):
+                                                pass
+                                        
+                                        # 🚨 Always evaluate thresholds (regardless of logging)
                                         breach = evaluate_threshold(node_config, value)
                                         if breach:
                                             logger.warning(
                                                 f"⚠️ {breach.level} breach for {node_config.tag_name}: "
                                                 f"value={value}"
                                             )
+                                        
+                                        node_config.save(update_fields=["last_value", "last_updated", "last_whole_number"])
 
                                 break  # ✅ Success, exit retry loop
 

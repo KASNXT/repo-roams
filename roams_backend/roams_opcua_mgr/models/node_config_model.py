@@ -61,6 +61,60 @@ class OPCUANode(models.Model):
         null=True,
         help_text="Engineering units for the tag (e.g., 'm³/h', 'm³',°C, bars etc.)."
     )
+    
+    # Data type for proper UI representation
+    DATA_TYPE_CHOICES = [
+        ("Float", "Float (32-bit)"),
+        ("Double", "Double (64-bit)"),
+        ("Int16", "Int16 (Signed 16-bit)"),
+        ("UInt16", "UInt16 (Unsigned 16-bit)"),
+        ("Int32", "Int32 (Signed 32-bit)"),
+        ("UInt32", "UInt32 (Unsigned 32-bit)"),
+        ("Boolean", "Boolean (True/False)"),
+        ("String", "String"),
+    ]
+    data_type = models.CharField(
+        max_length=20,
+        choices=DATA_TYPE_CHOICES,
+        default="Float",
+        help_text="OPC UA node data type"
+    )
+    
+    # Display representation type
+    DISPLAY_TYPE_CHOICES = [
+        ("numeric", "📊 Numeric Display"),
+        ("gauge", "🎯 Gauge (Linear)"),
+        ("gauge-circular", "🎡 Gauge (Circular)"),
+        ("progress", "📈 Progress Bar"),
+        ("switch", "🔘 Toggle Switch (Boolean)"),
+        ("status-indicator", "🟢 Status Indicator"),
+        ("chart", "📉 Mini Chart"),
+    ]
+    display_type = models.CharField(
+        max_length=20,
+        choices=DISPLAY_TYPE_CHOICES,
+        default="numeric",
+        help_text="How to display this node in the UI"
+    )
+    
+    # Display precision
+    decimal_places = models.IntegerField(
+        default=2,
+        help_text="Number of decimal places to display (0 for integers)"
+    )
+    
+    # Display range (for gauges and progress bars)
+    display_min = models.FloatField(
+        blank=True,
+        null=True,
+        help_text="Minimum value for gauge/chart display (auto-scale if blank)"
+    )
+    display_max = models.FloatField(
+        blank=True,
+        null=True,
+        help_text="Maximum value for gauge/chart display (auto-scale if blank)"
+    )
+    
     # Operational limits
     min_value = models.FloatField(
         blank=True,
@@ -71,6 +125,33 @@ class OPCUANode(models.Model):
         blank=True,
         null=True,
         help_text="Maximum acceptable value"
+    )
+    
+    # Icon/Category for UI grouping
+    ICON_CHOICES = [
+        ("zap", "⚡ Power"),
+        ("droplet", "💧 Flow/Liquid"),
+        ("gauge", "📏 Pressure/Level"),
+        ("thermometer", "🌡️ Temperature"),
+        ("battery", "🔋 Battery"),
+        ("wind", "💨 Air Flow"),
+        ("settings", "⚙️ Status"),
+        ("alert", "⚠️ Alert"),
+        ("check-circle", "✓ Operational"),
+        ("x-circle", "✗ Fault"),
+    ]
+    icon = models.CharField(
+        max_length=20,
+        choices=ICON_CHOICES,
+        blank=True,
+        default="",
+        help_text="Icon category for UI grouping"
+    )
+    
+    # Boolean control flag
+    is_boolean_control = models.BooleanField(
+        default=False,
+        help_text="Enable for boolean nodes that should be switchable (toggle controls)"
     )
     
     # Alert thresholds (combined from TagThreshold model)
@@ -101,6 +182,22 @@ class OPCUANode(models.Model):
         default=True,
         help_text="Whether threshold monitoring is active for this node"
     )
+    
+    # Sampling configuration
+    sampling_interval = models.IntegerField(
+        default=60,
+        help_text="Sampling interval in seconds (e.g., 60 for standard 1-minute intervals)"
+    )
+    last_whole_number = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Last recorded whole number value for change detection"
+    )
+    sample_on_whole_number_change = models.BooleanField(
+        default=True,
+        help_text="Only log data when whole number part changes (e.g., 47.6 -> 48)"
+    )
+    
     # Field for specifying the access level of the tag
     # Choices for access level
      # Choices for access level
@@ -125,7 +222,7 @@ class OPCUANode(models.Model):
         help_text="Enter the Node ID in the format 'ns=<number>;i=<number>'."
     )
     
-    last_value = models.CharField(blank=True, null=True)  # Changed to TextField for larger values
+    last_value = models.TextField(blank=True, null=True)  # TextField for larger values
     last_updated = models.DateTimeField(auto_now=True)
     is_alarm = models.BooleanField(default=False)
     
@@ -151,7 +248,10 @@ class OPCUANode(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.tag_name or 'No Tag'} - {self.node_id} [{self.tag_units}]"
+        icon_display = f"[{self.icon}]" if self.icon else ""
+        data_type_short = self.data_type.split("(")[0].strip()
+        display_info = f"{self.get_display_type_display()}"
+        return f"{self.tag_name or 'No Tag'} - {self.node_id} | {data_type_short} | {self.tag_units} | {display_info} {icon_display}"
 
 
 # Model for storing Tag Names (Predefined and Custom Tags)

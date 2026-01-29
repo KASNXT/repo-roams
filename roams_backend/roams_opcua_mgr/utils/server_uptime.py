@@ -39,6 +39,6 @@ def calculate_uptime(days=30):
             uptime_seconds += (timezone.now() - last_online).total_seconds()
 
         uptime = (uptime_seconds / total_duration) * 100
-        result[station.name] = round(uptime, 2)
+        result[station.station_name] = round(uptime, 2)
 
     return result

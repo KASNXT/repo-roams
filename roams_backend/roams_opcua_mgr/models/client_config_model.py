@@ -108,39 +108,46 @@ class OpcUaClientConfig(models.Model):
     )
 
     session_time_out = models.IntegerField(
-        default=30000,  # 30 seconds
-        validators=[MinValueValidator(1000), MaxValueValidator(3600000)],
-        help_text="Session timeout in milliseconds (1000ms to 3600000ms)."
+        default=60000,  # 60 seconds (increased from 30s for stability)
+        validators=[MinValueValidator(5000), MaxValueValidator(600000)],  # Updated: 5s-10min
+        help_text="⏱️ Session timeout in milliseconds. Server keeps session alive this long with no activity. "
+                  "Typical: 30000-60000ms (30-60s). Increase if frequent disconnects. Range: 5000-600000ms"
     )
 
     secure_time_out = models.IntegerField(
         default=10000,  # 10 seconds
-        validators=[MinValueValidator(1000), MaxValueValidator(30000)],
-        help_text="Secure timeout in milliseconds (1000ms to 30000ms)."
+        validators=[MinValueValidator(5000), MaxValueValidator(30000)],  # Updated: 5s-30s min for secure
+        help_text="🔒 Secure channel timeout in milliseconds. For encrypted connections only. "
+                  "Minimum 5000ms recommended for secure channels. Range: 5000-30000ms"
     )
 
     connection_time_out = models.IntegerField(
-        default=30000,  # 30 seconds
-        validators=[MinValueValidator(1000), MaxValueValidator(60000)],
-        help_text="Connection timeout in milliseconds (1000ms to 60000ms)."
+        default=5000,  # 5 seconds (fails fast on unreachable hosts)
+        validators=[MinValueValidator(1000), MaxValueValidator(30000)],  # Updated: 1s-30s
+        help_text="🔌 Connection timeout in milliseconds. How long to wait for server to respond to connection. "
+                  "Local: 3000-5000ms | Remote: 10000-15000ms | Slow: 20000-30000ms. Range: 1000-30000ms"
     )
 
     request_time_out = models.IntegerField(
         default=10000,  # 10 seconds
-        validators=[MinValueValidator(1000), MaxValueValidator(30000)],
-        help_text="Request timeout in milliseconds (1000ms to 30000ms)."
+        validators=[MinValueValidator(1000), MaxValueValidator(60000)],  # Updated: up to 60s
+        help_text="📝 Request timeout in milliseconds. Time to wait for OPC UA server to respond to read/write requests. "
+                  "Typical: 5000-10000ms. Range: 1000-60000ms"
     )
 
     acknowledge_time_out = models.IntegerField(
         default=5000,  # 5 seconds
-        validators=[MinValueValidator(1000), MaxValueValidator(10000)],
-        help_text="Acknowledge timeout in milliseconds (1000ms to 10000ms)."
+        validators=[MinValueValidator(1000), MaxValueValidator(30000)],  # Updated: up to 30s
+        help_text="✓ Acknowledge timeout in milliseconds. Wait time for write operations to complete. "
+                  "Typical: 3000-5000ms. Range: 1000-30000ms"
     )
 
     subscription_interval = models.IntegerField(
-        default=5000,  # 5 seconds
-        validators=[MinValueValidator(1000), MaxValueValidator(60000)],
-        help_text="Subscription interval in milliseconds (1000ms to 60000ms)."
+        default=5000,  # 5 seconds (BALANCED: Fast enough for alerts, slow enough for stability)
+        validators=[MinValueValidator(1000), MaxValueValidator(60000)],  # GOOD: 1s-60s
+        help_text="📈 Subscription interval in milliseconds. How often to read values from OPC UA server. "
+                  "Fast sensors: 1000ms | General: 5000ms | Slow sensors: 30000ms. "
+                  "⚠️ MUST MATCH other SCADA systems for accurate data comparison. Range: 1000-60000ms"
     )
 
     class Meta:
@@ -160,13 +167,51 @@ class OpcUaClientConfig(models.Model):
 
     def clean(self):
         """
-        Ensures that security policies and modes are valid.
+        Validates security policies, modes, and timeout configurations for consistency.
+        Prevents invalid timeout combinations that would cause connection issues.
         """
+        errors = {}
+        
+        # ✅ Security policy/mode validation
         if self.security_policy != "None" and self.security_mode == "None":
-            raise ValidationError("A security mode must be selected if a security policy is applied.")
+            errors['security_mode'] = "A security mode must be selected if a security policy is applied."
 
         if self.security_mode != "None" and self.security_policy == "None":
-            raise ValidationError("A security policy must be selected if a security mode is applied.")
+            errors['security_policy'] = "A security policy must be selected if a security mode is applied."
+        
+        # ✅ TIMEOUT RELATIONSHIP VALIDATION
+        # Rule 1: Session timeout should be greater than connection timeout
+        # (Session timeout is how long server keeps connection alive; connection_timeout is how long to wait for initial connection)
+        if self.session_time_out <= self.connection_time_out:
+            errors['session_time_out'] = (
+                f"Session timeout ({self.session_time_out}ms) should be > "
+                f"connection timeout ({self.connection_time_out}ms). "
+                f"Increase session_time_out or decrease connection_time_out."
+            )
+        
+        # Rule 2: Request timeout should not exceed session timeout
+        # (Can't wait longer for a request than the session lasts)
+        if self.request_time_out > self.session_time_out:
+            errors['request_time_out'] = (
+                f"Request timeout ({self.request_time_out}ms) should be < "
+                f"session timeout ({self.session_time_out}ms). "
+                f"Increase session_time_out or decrease request_time_out."
+            )
+        
+        # Rule 3: Secure timeout should be reasonable for encrypted channels
+        # If using security, secure_time_out should be at least as large as connection_time_out
+        if self.security_policy != "None" and self.security_mode != "None":
+            if self.secure_time_out < self.connection_time_out:
+                errors['secure_time_out'] = (
+                    f"Secure channel timeout ({self.secure_time_out}ms) should be >= "
+                    f"connection timeout ({self.connection_time_out}ms) since secure connections take longer. "
+                    f"Consider increasing secure_time_out."
+                )
+        
+        # Raise all errors together if any exist
+        if errors:
+            raise ValidationError(errors)
+    
     from django.db import IntegrityError, DatabaseError
     
     def safe_save(self):

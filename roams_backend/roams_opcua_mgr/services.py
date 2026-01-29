@@ -68,9 +68,7 @@ def evaluate_threshold(node_config, value):
             
             # Send notifications (email/SMS)
             try:
-                # Get the threshold instance (same as node in this system)
-                threshold = node_config
-                notify_threshold_breach(threshold, breach)
+                notify_threshold_breach(node_config, breach)
             except Exception as e:
                 logger.error(f"Failed to send notifications for breach {breach.id}: {e}")
             

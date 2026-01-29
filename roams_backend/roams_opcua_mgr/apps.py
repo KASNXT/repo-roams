@@ -10,18 +10,11 @@ class OpcuaMgrConfig(AppConfig):
     verbose_name = "ROAMS communication manager"
 
     def ready(self):
-        """Ensure signals are connected when Django starts."""
+        """Ensure signals are connected and OPC UA clients start when Django is ready."""
         import roams_opcua_mgr.signals  # ✅ Import signals safely
-
-        # ✅ Use `apps.get_model()` to avoid premature model access
-        from django.apps import apps
-        OpcUAClientConfig = apps.get_model("roams_opcua_mgr", "OpcUaClientConfig")
-
-        # ✅ Delay starting clients until Django is fully ready
-        transaction.on_commit(self.start_clients)
-
-    def start_clients(self):
-        """Start OPC UA clients **after** Django is fully loaded."""
-        from roams_opcua_mgr.opcua_client import start_opcua_clients  # ✅ Safe import inside function
+        
+        # ✅ Start OPC UA clients in background thread after Django is fully loaded
+        from roams_opcua_mgr.opcua_client import start_opcua_clients
         thread = threading.Thread(target=start_opcua_clients, daemon=True)
         thread.start()
+

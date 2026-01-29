@@ -85,14 +85,20 @@ def send_alert_email(node, breach):
         node: OPCUANode instance
         breach: ThresholdBreach instance
     """
+    if not NotificationConfig.SEND_EMAIL_ENABLED:
+        logger.debug("Email notifications disabled in settings")
+        return False
+        
     try:
         # Get recipients from database
         recipients_dict = get_breach_recipients(node, breach.level)
         email_recipients = recipients_dict.get('email', [])
         
         if not email_recipients:
-            logger.debug(f"No email recipients for {node.tag_name} breach ({breach.level})")
+            logger.warning(f"⚠️ No email recipients found for {node.tag_name} breach ({breach.level})")
             return False
+        
+        logger.info(f"📧 Preparing email for {node.tag_name} breach to {len(email_recipients)} recipient(s)")
         
         # Prepare email content
         subject = f"🚨 [{breach.level}] Threshold Breach: {node.tag_name}"
@@ -211,17 +217,57 @@ def send_alert_sms(node, breach):
 def notify_threshold_breach(node, breach):
     """
     Send all configured notifications for a threshold breach.
-    This is the main entry point for breach notifications.
+    Implements standard interval sending to avoid notification spam.
     
     Args:
         node: OPCUANode instance
         breach: ThresholdBreach instance
     """
-    logger.info(f"📢 Sending notifications for {breach.level} breach: {node.tag_name}")
+    from roams_opcua_mgr.models import NotificationSchedule
+    
+    logger.info(f"📢 Processing notifications for {breach.level} breach: {node.tag_name}")
+    
+    # Get or create notification schedule for this breach
+    schedule, created = NotificationSchedule.objects.get_or_create(
+        breach=breach,
+        defaults={
+            'last_notified_at': breach.timestamp,
+            'interval': '1hour',  # Default to hourly notifications
+            'notification_count': 0
+        }
+    )
+    
+    # If this is a new breach or it's time for the next scheduled notification
+    if created or schedule.should_notify_now():
+        # Send email
+        send_alert_email(node, breach)
+        
+        # Send SMS (only for critical breaches by default)
+        if breach.level == "Critical":
+            send_alert_sms(node, breach)
+        
+        # Record the notification
+        schedule.record_notification()
+        logger.info(
+            f"✅ Notification #{schedule.notification_count} sent for "
+            f"{breach.level} breach: {node.tag_name}"
+        )
+    else:
+        logger.debug(
+            f"⏭️  Next notification for {node.tag_name} scheduled at "
+            f"{schedule.last_notified_at + _get_interval_delta(schedule.interval)}"
+        )
 
-    # Send email
-    send_alert_email(node, breach)
 
-    # Send SMS (only for critical breaches by default)
-    if breach.level == "Critical":
-        send_alert_sms(node, breach)
+def _get_interval_delta(interval):
+    """Helper to get timedelta from interval string"""
+    from datetime import timedelta
+    interval_map = {
+        '15min': timedelta(minutes=15),
+        '30min': timedelta(minutes=30),
+        '1hour': timedelta(hours=1),
+        '4hours': timedelta(hours=4),
+        'daily': timedelta(days=1),
+        'never': timedelta(days=365*10),
+    }
+    return interval_map.get(interval, timedelta(hours=1))

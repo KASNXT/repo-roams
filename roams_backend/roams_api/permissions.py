@@ -1,5 +1,5 @@
 # roams_api/permissions.py
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import BasePermission, IsAuthenticated
 
 class IsFrontendApp(BasePermission):
     """
@@ -19,3 +19,27 @@ class IsFrontendApp(BasePermission):
             # No Origin header: allow access (curl, Postman, DRF)
             return True
         return origin in self.allowed_origins
+
+
+class IsAdminUser(BasePermission):
+    """
+    Allows access only to admin/superuser users.
+    Required for sensitive operations like user creation and role management.
+    """
+    
+    def has_permission(self, request, view):
+        return bool(request.user and (request.user.is_staff or request.user.is_superuser))
+
+
+class IsAdminOrReadOnly(BasePermission):
+    """
+    Allows admin/superuser to create/update/delete users.
+    Regular authenticated users can only read user list.
+    """
+    
+    def has_permission(self, request, view):
+        # Allow all authenticated users to read
+        if request.method in ['GET', 'HEAD', 'OPTIONS']:
+            return request.user and request.user.is_authenticated
+        # Only admin/superuser can create, update, delete
+        return bool(request.user and (request.user.is_staff or request.user.is_superuser))

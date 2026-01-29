@@ -24,39 +24,59 @@ from django.template.response import TemplateResponse
 @csrf_exempt
 def delete_logs_view(request):
     if request.method == "POST":
+        from django.db import connection
+        
         client_config_id = request.POST.get("client_config_id")
-        batch_size = int(request.POST.get("batch_size", 1000))
+        batch_size = int(request.POST.get("batch_size", 5000))
         
         try:
             client_config = OpcUaClientConfig.objects.get(id=client_config_id)
         except OpcUaClientConfig.DoesNotExist:
             return JsonResponse({"error": "Client config not found"}, status=404)
 
-        total_read = OpcUaReadLog.objects.filter(client_config=client_config).count()
-        total_write = OpcUaWriteLog.objects.filter(client_config=client_config).count()
-        total = total_read + total_write or 1  # avoid zero division
-
+        # Get total count more efficiently using raw SQL
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT COUNT(*) FROM roams_opcua_mgr_opcuareadlog WHERE client_config_id = %s",
+                [client_config_id]
+            )
+            total_read = cursor.fetchone()[0]
+            
+            cursor.execute(
+                "SELECT COUNT(*) FROM roams_opcua_mgr_opcuawritelog WHERE client_config_id = %s",
+                [client_config_id]
+            )
+            total_write = cursor.fetchone()[0]
+        
+        total = total_read + total_write or 1
         deleted = 0
+        
+        # Use raw SQL bulk delete for speed (10-100x faster than ORM)
         while True:
-            read_ids = list(
-                OpcUaReadLog.objects.filter(client_config=client_config)
-                .order_by('id')[:batch_size].values_list('id', flat=True)
-            )
-            write_ids = list(
-                OpcUaWriteLog.objects.filter(client_config=client_config)
-                .order_by('id')[:batch_size].values_list('id', flat=True)
-            )
-
-            if not read_ids and not write_ids:
+            with connection.cursor() as cursor:
+                # Delete read logs in batch
+                cursor.execute(
+                    f"DELETE FROM roams_opcua_mgr_opcuareadlog "
+                    f"WHERE client_config_id = %s LIMIT %s",
+                    [client_config_id, batch_size]
+                )
+                read_count = cursor.rowcount
+                deleted += read_count
+                
+                # Delete write logs in batch
+                cursor.execute(
+                    f"DELETE FROM roams_opcua_mgr_opcuawritelog "
+                    f"WHERE client_config_id = %s LIMIT %s",
+                    [client_config_id, batch_size]
+                )
+                write_count = cursor.rowcount
+                deleted += write_count
+            
+            if read_count == 0 and write_count == 0:
                 break
-
-            OpcUaReadLog.objects.filter(id__in=read_ids).delete()
-            deleted += len(read_ids)
-            OpcUaWriteLog.objects.filter(id__in=write_ids).delete()
-            deleted += len(write_ids)
-
-            # Update progress
-            progress_status[str(client_config_id)] = int((deleted / total) * 100)
+            
+            # Update progress (avoid division by zero)
+            progress_status[str(client_config_id)] = min(100, int((deleted / total) * 100))
 
         progress_status[str(client_config_id)] = 100
         return JsonResponse({"status": "complete"})

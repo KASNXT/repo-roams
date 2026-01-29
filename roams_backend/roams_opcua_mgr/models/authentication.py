@@ -8,7 +8,7 @@ class AuthenticationSetting(models.Model):
     """
     client_config = models.OneToOneField(
         OpcUaClientConfig,
-        on_delete=models.CASCADE,
+        on_delete=models.DO_NOTHING,  # Handle deletion manually to avoid timeouts
         help_text="Link to the OPCUA Client Configuration."
     )
 
