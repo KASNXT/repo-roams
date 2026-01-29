@@ -36,7 +36,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '144.91.79.167',  # Contabo VPS IP
-    '*'  # Remove this in production - security risk
+    # Add your domain when you get SSL: 'roams.yourdomain.com'
 ]
 
 
@@ -158,7 +158,7 @@ CSRF_TRUSTED_ORIGINS = [
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 
-SECRET_KEY = env.str("SECRET_KEY", default="fallback-secret-key")
+SECRET_KEY = env.str("SECRET_KEY")
 
 
 DATABASES = {
