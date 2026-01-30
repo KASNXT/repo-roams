@@ -8,6 +8,7 @@ import {
   AlertCircle,
   Clock,
 } from "lucide-react";
+import { getServerUrl } from "@/services/api";
 import {
   SidebarProvider,
   SidebarTrigger,
@@ -133,7 +134,7 @@ const Control = () => {
           return;
         }
 
-        const serverUrl = localStorage.getItem("roams_server_url") || "http://localhost:8000";
+        const serverUrl = getServerUrl();
         const authAxios = createAuthAxios();
         
         const response = await authAxios.get<{ results: ControlNode[] }>(
@@ -208,7 +209,7 @@ const Control = () => {
 
       // ✅ Write value to OPC UA node (1 for ON, 0 for OFF)
       const writeValue = pressed ? 1 : 0;
-      const serverUrl = localStorage.getItem("roams_server_url") || "http://localhost:8000";
+      const serverUrl = getServerUrl();
       const authAxios = createAuthAxios();
       
       await authAxios.post(
