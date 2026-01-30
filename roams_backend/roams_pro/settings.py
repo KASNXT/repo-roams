@@ -150,6 +150,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://192.168.183.232:8000",  # Local network backend
     'http://192.168.1.100:5173',  # Windows Wi-Fi IP for phone access
     'http://192.168.1.100:8000',  # Windows backend access
+    'http://144.91.79.167',  # Contabo VPS - Frontend (Nginx port 80)
+    'http://144.91.79.167:8000',  # Contabo VPS - Django direct access
 ]
 
 
