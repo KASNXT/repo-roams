@@ -1,0 +1,20 @@
+;; PgBouncer User List - Password Authentication
+;; Format: "username" "password"
+;; 
+;; SECURITY WARNING: This file contains plaintext passwords!
+;; Protect with: chmod 600 /etc/pgbouncer/userlist.txt
+;; 
+;; To generate MD5 hash for a user:
+;; Python: import hashlib; print('md5' + hashlib.md5(b'password' + b'username').hexdigest())
+;; 
+;; Example entries (REPLACE WITH YOUR ACTUAL CREDENTIALS):
+
+"postgres" "REPLACE_WITH_YOUR_PASSWORD"
+"roams_user" "REPLACE_WITH_YOUR_PASSWORD"
+
+;; MD5 format example (more secure than plaintext):
+;; "postgres" "md5d8578edf8458ce06fbc5bb76a58c5ca4"
+;;
+;; To use MD5:
+;; 1. Generate hash: echo -n 'passwordusername' | md5sum
+;; 2. Prefix with 'md5': "username" "md5<hash>"

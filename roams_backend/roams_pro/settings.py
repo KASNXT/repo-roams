@@ -162,6 +162,17 @@ CSRF_TRUSTED_ORIGINS = [
 
 SECRET_KEY = env.str("SECRET_KEY")
 
+# ==================== DATABASE CONFIGURATION ====================
+# PgBouncer Support: Set DB_PORT=6432 in .env to use PgBouncer connection pooling
+# When using PgBouncer:
+#   - PORT = 6432 (PgBouncer) instead of 5432 (PostgreSQL)
+#   - CONN_MAX_AGE = 0 (disable Django pooling, let PgBouncer handle it)
+#   - Reduce connect_timeout (PgBouncer is local and fast)
+# Without PgBouncer:
+#   - PORT = 5432 (Direct PostgreSQL)
+#   - CONN_MAX_AGE = 600 (Django handles connection pooling)
+
+USING_PGBOUNCER = env.str("DB_PORT", default="5432") == "6432"
 
 DATABASES = {
     "default": {
@@ -171,10 +182,15 @@ DATABASES = {
         "PASSWORD": env.str("DB_PASSWORD", default="password"),
         "HOST": env.str("DB_HOST", default="127.0.0.1"),
         "PORT": env.str("DB_PORT", default="5432"),
-        'CONN_MAX_AGE': 600,  # 10-minute connection pooling (0 = no pooling, not recommended for production)
+        
+        # Connection pooling: Disabled when PgBouncer is active, enabled otherwise
+        'CONN_MAX_AGE': 0 if USING_PGBOUNCER else 600,
+        
         "OPTIONS": {
-            "connect_timeout": 30,
-            # Increase statement timeout significantly (30 minutes) to prevent admin operations from timing out
+            # Reduce timeout when using PgBouncer (local, fast)
+            "connect_timeout": 10 if USING_PGBOUNCER else 30,
+            
+            # Statement and lock timeouts (30 minutes for large admin operations)
             "options": "-c statement_timeout=1800000 -c lock_timeout=300000",
         }
     }
