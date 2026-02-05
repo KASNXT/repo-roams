@@ -16,7 +16,11 @@ NC='\033[0m' # No Color
 
 # Load environment variables
 if [ -f "roams_backend/.env" ]; then
-    source roams_backend/.env
+    # Parse .env file safely (no sourcing to avoid special character issues)
+    ENV_FILE="roams_backend/.env"
+    DB_USER=$(grep -E "^DB_USER=" "$ENV_FILE" | sed 's/^DB_USER=//' | tr -d '\r\n' | tr -d '"' | tr -d "'")
+    DB_NAME=$(grep -E "^DB_NAME=" "$ENV_FILE" | sed 's/^DB_NAME=//' | tr -d '\r\n' | tr -d '"' | tr -d "'")
+    DB_PASSWORD=$(grep -E "^DB_PASSWORD=" "$ENV_FILE" | sed 's/^DB_PASSWORD=//' | tr -d '\r\n' | tr -d '"' | tr -d "'")
 else
     echo -e "${YELLOW}WARNING: .env file not found${NC}"
     DB_USER=${DB_USER:-postgres}

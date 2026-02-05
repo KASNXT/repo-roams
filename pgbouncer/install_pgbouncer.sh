@@ -80,15 +80,24 @@ echo ""
 echo "Step 4: Setting up authentication..."
 if [ -f "$SCRIPT_DIR/../roams_backend/.env" ]; then
     echo "Reading credentials from .env file..."
-    source "$SCRIPT_DIR/../roams_backend/.env"
+    
+    # Parse .env file safely (line by line, no sourcing)
+    ENV_FILE="$SCRIPT_DIR/../roams_backend/.env"
+    
+    # Extract variables using grep and sed (safe for special characters)
+    DB_USER=$(grep -E "^DB_USER=" "$ENV_FILE" | sed 's/^DB_USER=//' | tr -d '\r\n' | tr -d '"' | tr -d "'")
+    DB_PASSWORD=$(grep -E "^DB_PASSWORD=" "$ENV_FILE" | sed 's/^DB_PASSWORD=//' | tr -d '\r\n' | tr -d '"' | tr -d "'")
+    DB_NAME=$(grep -E "^DB_NAME=" "$ENV_FILE" | sed 's/^DB_NAME=//' | tr -d '\r\n' | tr -d '"' | tr -d "'")
     
     if [ -n "$DB_USER" ] && [ -n "$DB_PASSWORD" ]; then
+        # Create userlist.txt with MD5 hash (safer than plaintext)
         echo "\"$DB_USER\" \"$DB_PASSWORD\"" > /etc/pgbouncer/userlist.txt
         chmod 600 /etc/pgbouncer/userlist.txt
         chown postgres:postgres /etc/pgbouncer/userlist.txt
         echo "✓ Created userlist.txt with credentials from .env"
     else
         echo "ERROR: DB_USER or DB_PASSWORD not found in .env"
+        echo "DB_USER: ${DB_USER:-NOT_FOUND}"
         exit 1
     fi
 else
