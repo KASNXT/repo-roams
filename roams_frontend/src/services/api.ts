@@ -26,8 +26,10 @@ const api = axios.create({
 
 // --- Attach token and dynamic baseURL automatically ---
 api.interceptors.request.use((config) => {
-  // Set baseURL dynamically on each request
-  config.baseURL = `${getServerUrl()}/api`;
+  // Prefer same-origin proxy in production to avoid CORS
+  const hostname = typeof window !== "undefined" ? window.location.hostname : "";
+  const isProdVps = hostname === "144.91.79.167";
+  config.baseURL = isProdVps ? "/api" : `${getServerUrl()}/api`;
   
   const token = localStorage.getItem("token");
   if (token) {
@@ -300,6 +302,53 @@ export async function fetchTelemetry(
   if (dateRange?.to) params.to = dateRange.to.toISOString();
 
   const res = await api.get<TelemetryPoint[]>("/telemetry/", { params });
+  return res.data;
+}
+
+// -------- VPN Monitoring (Admin Only) --------
+export interface VPNClient {
+  id: string;
+  name: string;
+  ip_address: string;
+  vpn_type: 'OpenVPN' | 'L2TP/IPSec';
+  connected_since: string;
+  bytes_received: number;
+  bytes_sent: number;
+  status: string;
+}
+
+export interface VPNStatus {
+  total_connections: number;
+  openvpn_count: number;
+  l2tp_count: number;
+  clients: VPNClient[];
+  servers: {
+    openvpn: boolean;
+    l2tp: boolean;
+  };
+  last_updated: string;
+}
+
+export async function fetchVPNStatus(): Promise<VPNStatus> {
+  const res = await api.get<VPNStatus>("/vpn-monitor/all_connections/");
+  return res.data;
+}
+
+export async function fetchOpenVPNStatus() {
+  const res = await api.get("/vpn-monitor/openvpn_status/");
+  return res.data;
+}
+
+export async function fetchL2TPStatus() {
+  const res = await api.get("/vpn-monitor/l2tp_status/");
+  return res.data;
+}
+
+export async function disconnectVPNClient(clientId: string, vpnType: string): Promise<any> {
+  const res = await api.post("/vpn-monitor/disconnect_client/", {
+    client_id: clientId,
+    vpn_type: vpnType,
+  });
   return res.data;
 }
 

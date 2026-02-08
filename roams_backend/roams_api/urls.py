@@ -28,6 +28,7 @@ from .control_viewsets import (
     ControlPermissionViewSet,
     ControlStateRequestViewSet,
 )
+from .vpn_views import VPNMonitorViewSet
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='user')
@@ -37,6 +38,7 @@ router.register(r'control-states', ControlStateViewSet, basename='control-state'
 router.register(r'control-state-history', ControlStateHistoryViewSet, basename='control-state-history')
 router.register(r'control-permissions', ControlPermissionViewSet, basename='control-permission')
 router.register(r'control-state-requests', ControlStateRequestViewSet, basename='control-state-request')
+router.register(r'vpn-monitor', VPNMonitorViewSet, basename='vpn-monitor')
 router.register(r'opcua_node', OPCUANodeViewSet, basename='opcua_node')
 router.register(r'opcua_clientconfig', OpcUaClientConfigViewSet, basename='opcua_clientconfig')
 router.register(r'opcua_readlog', OpcUaReadLogViewSet, basename='read-logs')

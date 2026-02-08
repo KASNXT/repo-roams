@@ -191,7 +191,6 @@ DATABASES = {
             "connect_timeout": 10 if USING_PGBOUNCER else 30,
             
             # Statement and lock timeouts (30 minutes for large admin operations)
-            "options": "-c statement_timeout=1800000 -c lock_timeout=300000",
         }
     }
 }
@@ -238,7 +237,7 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 100,
+    'PAGE_SIZE': 500,
 }
 
 # API Rate Limiting (only in production to prevent abuse)

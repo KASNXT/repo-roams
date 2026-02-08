@@ -151,24 +151,26 @@ export const TelemetryCharts = ({
       ...realtimePoints.map(normalize),
     ];
 
+    console.log("📊 Merged telemetry - Total points:", all.length, "History:", historyData.length, "Realtime:", realtimePoints.length);
+
     // Filter by station (only include items for this well)
     const byStation = all.filter((t) => {
       if (!t.station) return true; // keep if station unknown (fallback)
       return normalizeKey(t.station) === normalizeKey(wellId);
     });
 
-    // Filter by dateRange if provided
-    const byDate = byStation.filter((t) => {
-      if (!dateRange?.from || !dateRange?.to) return true;
-      const ts = new Date(t.timestamp).getTime();
-      return ts >= dateRange.from.getTime() && ts <= dateRange.to.getTime();
-    });
+    console.log("📊 After station filter:", byStation.length, "for station:", wellId);
+
+    // DON'T filter by dateRange here - the API already filtered it!
+    // The date range filter here was causing duplicate filtering and preventing data from showing
 
     // Sort ascending timestamp
-    byDate.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    byStation.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
-    return byDate;
-  }, [historyData, realtimePoints, wellId, dateRange]);
+    console.log("📊 Final data points:", byStation.length);
+
+    return byStation;
+  }, [historyData, realtimePoints, wellId]);
 
   // Build list of available parameters (from nodes); default selects all on initial load
   useEffect(() => {

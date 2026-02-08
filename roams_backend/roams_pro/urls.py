@@ -24,9 +24,14 @@ from roams_opcua_mgr.views import ForceDashboardLoginView
 from django.shortcuts import redirect
 from rest_framework.authtoken.views import obtain_auth_token  # ✅ import DRF's token view
 from django.views.generic import RedirectView
+from roams_api.health_views import health_check, health_check_detailed
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # Health check endpoints (no auth required for monitoring)
+    path('health/', health_check, name='health_check'),
+    path('health/detailed/', health_check_detailed, name='health_check_detailed'),
 
     # Favicon
     path('favicon.ico', RedirectView.as_view(url='/static/img/favicon.ico', permanent=True)),

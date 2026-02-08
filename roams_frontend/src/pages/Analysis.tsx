@@ -21,8 +21,9 @@ import api from "@/services/api";
 
 const Analysis = () => {
   // --- States ---
+  // Default to 30 days of data to show all available historical records
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: new Date(new Date().setDate(new Date().getDate() - 7)),
+    from: new Date(new Date().setDate(new Date().getDate() - 30)),
     to: new Date(),
   });
   const [autoRefresh, setAutoRefresh] = useState(false);

@@ -10,6 +10,8 @@ class IsFrontendApp(BasePermission):
     allowed_origins = [
         "http://127.0.0.1:5173",  # Vite dev
         "http://localhost:5173",
+        "http://144.91.79.167",  # VPS production
+        "https://144.91.79.167",  # VPS production HTTPS
         "https://yourdomain.com",  # production frontend
     ]
 

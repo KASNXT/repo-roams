@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { StatusIndicator } from "@/components/StatusIndicator";
+import { VPNConnections } from "./VPNConnections";
+import { getServerUrl } from "@/services/api";
 import { CheckCircle } from "lucide-react";
 
 interface NetworkConfig {
@@ -35,7 +37,40 @@ export function NetworkTab() {
   });
 
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [apiStatus, setApiStatus] = useState<"connected" | "disconnected" | "testing">("disconnected");
+  const [apiStatus, setApiStatus] = useState<"connected" | "disconnected" | "testing">("testing");
+
+  // Check API server health
+  useEffect(() => {
+    const checkApiHealth = async () => {
+      try {
+        setApiStatus("testing");
+        const serverUrl = getServerUrl(); // Use centralized server detection
+        // Use the /api/ endpoint which returns DRF API root
+        const response = await fetch(`${serverUrl}/api/`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+        
+        // Accept both 200 (authenticated) and 403 (unauthenticated but server is up)
+        if (response.ok || response.status === 403 || response.status === 401) {
+          setApiStatus("connected");
+        } else {
+          setApiStatus("disconnected");
+        }
+      } catch (error) {
+        console.error("API health check failed:", error);
+        setApiStatus("disconnected");
+      }
+    };
+
+    // Initial check
+    checkApiHealth();
+
+    // Check every 30 seconds
+    const interval = setInterval(checkApiHealth, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSaveAll = () => {
     // Save all configuration to localStorage
@@ -117,6 +152,9 @@ export function NetworkTab() {
           </div>
         </CardContent>
       </Card>
+
+      {/* VPN Connections Monitor (Admin Only) */}
+      <VPNConnections />
 
       {/* API Configuration */}
       <Card className="shadow-card">

@@ -38,9 +38,24 @@ from rest_framework.exceptions import PermissionDenied
 # User Serializer & ViewSet
 # ----------------------------
 class UserSerializer(serializers.ModelSerializer):
+    role = serializers.SerializerMethodField()
+    
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'is_active', 'is_staff']
+        fields = ['id', 'username', 'email', 'is_active', 'is_staff', 'role']
+    
+    def get_role(self, obj):
+        """Get role from UserProfile"""
+        try:
+            return obj.profile.role
+        except:
+            # Fallback: create profile with default 'viewer' role if missing
+            from roams_api.models import UserProfile
+            profile, created = UserProfile.objects.get_or_create(
+                user=obj,
+                defaults={'role': 'viewer'}
+            )
+            return profile.role
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -298,9 +313,9 @@ from django.utils import timezone
 from rest_framework.pagination import PageNumberPagination
 
 class TelemetryPagination(PageNumberPagination):
-    page_size = 100
+    page_size = 500
     page_size_query_param = 'page_size'
-    max_page_size = 1000
+    max_page_size = 5000
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsFrontendApp])
@@ -642,7 +657,8 @@ class OpcUaClientConfigViewSet(viewsets.ModelViewSet):
     ordering_fields = ['station_name', 'last_connected']
 
 class OpcUaReadLogViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = OpcUaReadLog.objects.all().order_by('-timestamp')
+    # ⚡ Performance: Use select_related to reduce database queries
+    queryset = OpcUaReadLog.objects.select_related('client_config', 'node').all().order_by('-timestamp')
     serializer_class = OpcUaReadLogSerializer
     permission_classes = [IsAuthenticated, IsFrontendApp]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -851,7 +867,8 @@ class ThresholdBreachViewSet(viewsets.ModelViewSet):
     - POST /api/breaches/1/acknowledge/ - Mark as acknowledged
     - POST /api/breaches/1/dismiss/ - Dismiss a breach
     """
-    queryset = ThresholdBreach.objects.select_related('node').order_by('-timestamp')
+    # ⚡ Performance: Use select_related to reduce database queries
+    queryset = ThresholdBreach.objects.select_related('node', 'node__client_config').order_by('-timestamp')
     serializer_class = ThresholdBreachSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
