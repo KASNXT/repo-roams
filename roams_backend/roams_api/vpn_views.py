@@ -110,6 +110,8 @@ class VPNMonitorViewSet(viewsets.ViewSet):
         Uses xl2tpd control or ipsec status commands.
         """
         try:
+            from roams_opcua_mgr.models import OpcUaClientConfig
+            
             clients = []
             
             # Try to get PPP connections (L2TP uses PPP)
@@ -134,12 +136,26 @@ class VPNMonitorViewSet(viewsets.ViewSet):
                                 if match:
                                     server_ip = match.group(1)
                                     client_ip = match.group(2)
+                                    
+                                    # Try to find station name by matching VPN IP
+                                    station_name = 'L2TP Station'
+                                    try:
+                                        # Check if any station has this VPN IP in its configuration
+                                        station = OpcUaClientConfig.objects.filter(
+                                            endpoint_url__contains=client_ip
+                                        ).first()
+                                        if station:
+                                            station_name = station.station_name
+                                    except:
+                                        pass
+                                    
                                     clients.append({
-                                        'name': f'L2TP Client',
+                                        'name': station_name,
                                         'ip_address': client_ip,
                                         'vpn_address': client_ip,
                                         'status': 'ESTABLISHED',
                                         'protocol': 'L2TP/IPSec',
+                                        'encryption': 'IPSec',
                                     })
             except FileNotFoundError:
                 pass
@@ -219,12 +235,14 @@ class VPNMonitorViewSet(viewsets.ViewSet):
             for client in l2tp_clients:
                 all_clients.append({
                     'id': f'l2tp_{client["ip_address"]}',
-                    'name': client.get('name', 'L2TP Client'),
+                    'name': client.get('name', 'L2TP Station'),
                     'ip_address': client['ip_address'],
+                    'vpn_ip': client.get('vpn_address', client['ip_address']),
                     'vpn_type': 'L2TP/IPSec',
                     'connected_since': 'N/A',
                     'bytes_received': 0,
                     'bytes_sent': 0,
+                    'encryption': client.get('encryption', 'IPSec'),
                     'status': client.get('status', 'Connected'),
                 })
             
