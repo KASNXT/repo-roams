@@ -310,10 +310,12 @@ export interface VPNClient {
   id: string;
   name: string;
   ip_address: string;
+  vpn_ip?: string;
   vpn_type: 'OpenVPN' | 'L2TP/IPSec';
   connected_since: string;
   bytes_received: number;
   bytes_sent: number;
+  encryption?: string;
   status: string;
 }
 
