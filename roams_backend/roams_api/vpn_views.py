@@ -114,6 +114,35 @@ class VPNMonitorViewSet(viewsets.ViewSet):
             
             clients = []
             
+            # Get IPSec tunnel information for duration tracking
+            ipsec_tunnels = {}
+            try:
+                result = subprocess.run(
+                    ['ipsec', 'statusall'],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                
+                if result.returncode == 0:
+                    # Parse IPSec status for connection establishment times
+                    # Example: "road-warrior[3]: ESTABLISHED 2 hours ago, 10.99.0.2[%any]...144.91.79.167[144.91.79.167]"
+                    for line in result.stdout.split('\n'):
+                        if 'ESTABLISHED' in line:
+                            # Extract client IP and duration
+                            client_match = re.search(r'(\d+\.\d+\.\d+\.\d+)\[', line)
+                            time_match = re.search(r'ESTABLISHED\s+(.+?),', line)
+                            
+                            if client_match and time_match:
+                                client_ip = client_match.group(1)
+                                duration_str = time_match.group(1).strip()
+                                ipsec_tunnels[client_ip] = {
+                                    'duration': duration_str,
+                                    'established': duration_str
+                                }
+            except (FileNotFoundError, subprocess.TimeoutExpired):
+                pass
+            
             # Try to get PPP connections (L2TP uses PPP)
             try:
                 result = subprocess.run(
@@ -149,6 +178,9 @@ class VPNMonitorViewSet(viewsets.ViewSet):
                                     except:
                                         pass
                                     
+                                    # Get duration from IPSec tunnel info if available
+                                    duration = ipsec_tunnels.get(client_ip, {}).get('duration', None)
+                                    
                                     clients.append({
                                         'name': station_name,
                                         'ip_address': client_ip,
@@ -156,6 +188,8 @@ class VPNMonitorViewSet(viewsets.ViewSet):
                                         'status': 'ESTABLISHED',
                                         'protocol': 'L2TP/IPSec',
                                         'encryption': 'IPSec',
+                                        'duration': duration,
+                                        'connected_since': ipsec_tunnels.get(client_ip, {}).get('established'),
                                     })
             except FileNotFoundError:
                 pass
@@ -233,13 +267,49 @@ class VPNMonitorViewSet(viewsets.ViewSet):
                 })
             
             for client in l2tp_clients:
+                # Parse duration string if available
+                duration_seconds = 0
+                duration_str = client.get('duration', 'N/A')
+                connected_since = client.get('connected_since', 'N/A')
+                
+                # Parse duration string like "2 hours ago", "45 minutes ago", etc.
+                if duration_str and duration_str != 'N/A':
+                    try:
+                        import re
+                        # Extract numbers and units
+                        parts = duration_str.split()
+                        total_seconds = 0
+                        
+                        i = 0
+                        while i < len(parts):
+                            if parts[i].isdigit():
+                                value = int(parts[i])
+                                if i + 1 < len(parts):
+                                    unit = parts[i + 1].lower()
+                                    if 'second' in unit:
+                                        total_seconds += value
+                                    elif 'minute' in unit:
+                                        total_seconds += value * 60
+                                    elif 'hour' in unit:
+                                        total_seconds += value * 3600
+                                    elif 'day' in unit:
+                                        total_seconds += value * 86400
+                                i += 2
+                            else:
+                                i += 1
+                        
+                        duration_seconds = total_seconds
+                    except:
+                        pass
+                
                 all_clients.append({
                     'id': f'l2tp_{client["ip_address"]}',
                     'name': client.get('name', 'L2TP Station'),
                     'ip_address': client['ip_address'],
                     'vpn_ip': client.get('vpn_address', client['ip_address']),
                     'vpn_type': 'L2TP/IPSec',
-                    'connected_since': 'N/A',
+                    'connected_since': connected_since,
+                    'duration_seconds': duration_seconds,
                     'bytes_received': 0,
                     'bytes_sent': 0,
                     'encryption': client.get('encryption', 'IPSec'),
