@@ -116,8 +116,9 @@ if not DEBUG:
 # Session security
 SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
 SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
-CSRF_COOKIE_HTTPONLY = True  # Prevent JavaScript access to CSRF token
+CSRF_COOKIE_HTTPONLY = False  # Must be False for Django admin to access CSRF token
 CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_USE_SESSIONS = False  # Use cookies instead of sessions for CSRF tokens
 
 ROOT_URLCONF = 'roams_pro.urls'
 
@@ -142,6 +143,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'roams_pro.wsgi.application'
 ASGI_APPLICATION = 'roams_pro.asgi.application'
+# CSRF Trusted Origins - must match exactly what browser sends
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000", 
     "http://localhost:5173", 
@@ -152,6 +154,9 @@ CSRF_TRUSTED_ORIGINS = [
     'http://192.168.1.100:8000',  # Windows backend access
     'http://144.91.79.167',  # Contabo VPS - Frontend (Nginx port 80)
     'http://144.91.79.167:8000',  # Contabo VPS - Django direct access
+    # Add HTTPS when SSL is configured
+    # 'https://144.91.79.167',
+    # 'https://roams.yourdomain.com',
 ]
 
 
