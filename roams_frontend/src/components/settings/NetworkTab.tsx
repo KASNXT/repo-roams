@@ -45,13 +45,21 @@ export function NetworkTab() {
       try {
         setApiStatus("testing");
         const serverUrl = getServerUrl(); // Use centralized server detection
+        
+        // Get auth token if available to avoid 401 errors in console
+        const token = localStorage.getItem("token");
+        const headers: HeadersInit = { "Content-Type": "application/json" };
+        if (token) {
+          headers["Authorization"] = `Token ${token}`;
+        }
+        
         // Use the /api/ endpoint which returns DRF API root
         const response = await fetch(`${serverUrl}/api/`, {
           method: "GET",
-          headers: { "Content-Type": "application/json" },
+          headers,
         });
         
-        // Accept both 200 (authenticated) and 403 (unauthenticated but server is up)
+        // Accept both 200 (authenticated) and 403/401 (unauthenticated but server is up)
         if (response.ok || response.status === 403 || response.status === 401) {
           setApiStatus("connected");
         } else {

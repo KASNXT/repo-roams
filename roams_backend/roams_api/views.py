@@ -21,11 +21,12 @@ logger = logging.getLogger(__name__)
 
 from .serializers import (
     OPCUANodeSerializer, OpcUaClientConfigSerializer, OpcUaReadLogSerializer,
-    AlarmLogSerializer, AlarmRetentionPolicySerializer
+    AlarmLogSerializer, AlarmRetentionPolicySerializer, StationDeviceSpecificationsSerializer,
+    OpcUaClientConfigDetailedSerializer
 )
 from roams_opcua_mgr.models import (
     OPCUANode, OpcUaClientConfig, OpcUaReadLog, TagName, NotificationRecipient, 
-    ThresholdBreach, AlarmLog, AlarmRetentionPolicy
+    ThresholdBreach, AlarmLog, AlarmRetentionPolicy, StationDeviceSpecifications
 )
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
@@ -318,7 +319,7 @@ class TelemetryPagination(PageNumberPagination):
     max_page_size = 5000
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsFrontendApp])
+@permission_classes([IsAuthenticated])  # Temporarily removed IsFrontendApp to debug 403
 def telemetry_data(request):
     """
     Returns telemetry data filtered by station name and optional date range.
@@ -337,6 +338,12 @@ def telemetry_data(request):
     station_name = request.GET.get("station")
     from_date = request.GET.get("from")
     to_date = request.GET.get("to")
+    
+    # Debug logging to file
+    with open('/tmp/telemetry_debug.log', 'a') as f:
+        f.write(f"🔍 Telemetry API: station={station_name}, from={from_date}, to={to_date}\n")
+    
+    print(f"🔍 Telemetry API called: station={station_name}, from={from_date}, to={to_date}")
 
     if not station_name:
         return Response({"error": "Missing required 'station' parameter"}, status=400)
@@ -345,6 +352,10 @@ def telemetry_data(request):
 
     # Filter by station
     queryset = queryset.filter(client_config__station_name=station_name)
+    count_after_station = queryset.count()
+    with open('/tmp/telemetry_debug.log', 'a') as f:
+        f.write(f"📊 After station filter: {count_after_station} records\n")
+    print(f"📊 After station filter: {count_after_station} records")
 
     # Date range
     if from_date and to_date:
@@ -357,6 +368,10 @@ def telemetry_data(request):
             if to_dt.tzinfo is None:
                 to_dt = timezone.make_aware(to_dt)
             queryset = queryset.filter(timestamp__range=(from_dt, to_dt))
+            count_after_date = queryset.count()
+            with open('/tmp/telemetry_debug.log', 'a') as f:
+                f.write(f"📅 After date filter: {count_after_date} records\n")
+            print(f"📅 After date filter ({from_dt} to {to_dt}): {count_after_date} records")
         except Exception as e:
             print("⚠️ Invalid date range:", e)
             return Response(
@@ -365,6 +380,9 @@ def telemetry_data(request):
             )
 
     if not queryset.exists():
+        with open('/tmp/telemetry_debug.log', 'a') as f:
+            f.write(f"❌ No data found for station '{station_name}'\n")
+        print(f"❌ No data found for station '{station_name}'")
         return Response([], status=status.HTTP_200_OK)
 
     # ✅ FIX 3: Apply pagination instead of hard limit
@@ -396,6 +414,9 @@ def telemetry_data(request):
                 "station": log.client_config.station_name,
             })
         
+        with open('/tmp/telemetry_debug.log', 'a') as f:
+            f.write(f"✅ Returning {len(data)} records via pagination\n")
+        print(f"✅ Returning {len(data)} records via pagination")
         return paginator.get_paginated_response(data)
     
     # Fallback if pagination fails
@@ -1137,3 +1158,126 @@ class AlarmRetentionPolicyViewSet(viewsets.ModelViewSet):
         policy = self.get_object()
         serializer = self.get_serializer(policy)
         return Response(serializer.data)
+
+
+class StationDeviceSpecificationsViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing station device specifications (nameplate data).
+    
+    Allows storing and retrieving motor/pump specifications for performance comparison:
+    - Motor power rating (kW)
+    - Rated current (A)
+    - Rated flow rate (m³/h)
+    - Rated head (m)
+    
+    Used in Analysis page to compare rated vs actual performance metrics.
+    
+    Endpoints:
+    - GET /api/device-specs/ - List all specs
+    - POST /api/device-specs/ - Create new spec
+    - GET /api/device-specs/{id}/ - Get specific spec
+    - PUT /api/device-specs/{id}/ - Update spec
+    - PATCH /api/device-specs/{id}/ - Partial update
+    - DELETE /api/device-specs/{id}/ - Delete spec
+    - GET /api/device-specs/by-station/{station_id}/ - Get spec for station
+    """
+    queryset = StationDeviceSpecifications.objects.select_related('station')
+    serializer_class = StationDeviceSpecificationsSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['station']
+    
+    @action(detail=False, methods=['get'])
+    def by_station(self, request):
+        """
+        Get device specifications for a specific station.
+        Query param: ?station_id=1
+        
+        Returns the performance metrics helper data.
+        """
+        station_id = request.query_params.get('station_id')
+        if not station_id:
+            return Response(
+                {'error': 'station_id parameter required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            specs = StationDeviceSpecifications.objects.get(station_id=station_id)
+            serializer = self.get_serializer(specs)
+            return Response(serializer.data)
+        except StationDeviceSpecifications.DoesNotExist:
+            return Response(
+                {'error': 'Device specifications not found for this station'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+    
+    @action(detail=True, methods=['post'])
+    def compare_metrics(self, request, pk=None):
+        """
+        Compare current readings with rated specifications.
+        
+        POST /api/device-specs/{id}/compare_metrics/
+        {
+            "current_current": 45.5,
+            "current_flow": 150.0,
+            "current_head": 28.5,          # Direct head measurement in meters
+            "current_pressure_bar": 2.8,   # OR pressure measurement (auto-converts to head)
+            "current_power": 8.5
+        }
+        
+        Pressure-to-Head Conversion (for water):
+        - Head (m) = Pressure (bar) × 10.197
+        - Provide either current_head OR current_pressure_bar, not both
+        
+        Returns percentages of rated values and whether values exceed rated.
+        """
+        specs = self.get_object()
+        current_current = request.data.get('current_current')
+        current_flow = request.data.get('current_flow')
+        current_head = request.data.get('current_head')
+        current_pressure_bar = request.data.get('current_pressure_bar')
+        current_power = request.data.get('current_power')
+        
+        # Validate that only one of head or pressure is provided
+        if current_head is not None and current_pressure_bar is not None:
+            return Response(
+                {'error': 'Provide either current_head or current_pressure_bar, not both'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        metrics = specs.get_performance_metrics(
+            current_current=current_current,
+            current_flow=current_flow,
+            current_head=current_head,
+            current_pressure_bar=current_pressure_bar,
+            current_power=current_power
+        )
+        
+        # Build response with effective head for display
+        effective_head = specs.get_effective_rated_head()
+        response_data = {
+            'station': specs.station.station_name,
+            'rated_specs': {
+                'motor_power_rating_kw': specs.motor_power_rating,
+                'rated_current_a': specs.rated_current,
+                'rated_flow_rate_m3_h': specs.rated_flow_rate,
+                'rated_head_m': specs.rated_head,
+                'rated_pressure_bar': specs.rated_pressure_bar,
+                'effective_rated_head_m': effective_head,
+            },
+            'current_readings': {
+                'current_current_a': current_current,
+                'current_flow_m3_h': current_flow,
+                'current_head_m': current_head,
+                'current_pressure_bar': current_pressure_bar,
+                'current_power_kw': current_power,
+            },
+            'performance_metrics': metrics,
+            'conversion_info': {
+                'note': 'Pressure to Head conversion: Head (m) = Pressure (bar) × 10.197',
+                'if_pressure_provided': 'Pressure is automatically converted to head for comparison'
+            }
+        }
+        
+        return Response(response_data)

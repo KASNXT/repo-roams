@@ -1,5 +1,6 @@
 # roams_api/urls.py
 from django.urls import path, include
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.routers import DefaultRouter
 from rest_framework.authtoken.views import obtain_auth_token 
 from roams_api import views
@@ -21,6 +22,7 @@ from .views import (
     NotificationRecipientViewSet,
     AlarmLogViewSet,
     AlarmRetentionPolicyViewSet,
+    StationDeviceSpecificationsViewSet,
 )
 from .control_viewsets import (
     ControlStateViewSet,
@@ -28,7 +30,12 @@ from .control_viewsets import (
     ControlPermissionViewSet,
     ControlStateRequestViewSet,
 )
-from .vpn_views import VPNMonitorViewSet
+from .vpn_views import (
+    VPNMonitorViewSet,
+    L2TPVPNClientViewSet,
+    OpenVPNClientViewSet,
+    VPNAuditLogViewSet,
+)
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='user')
@@ -39,6 +46,9 @@ router.register(r'control-state-history', ControlStateHistoryViewSet, basename='
 router.register(r'control-permissions', ControlPermissionViewSet, basename='control-permission')
 router.register(r'control-state-requests', ControlStateRequestViewSet, basename='control-state-request')
 router.register(r'vpn-monitor', VPNMonitorViewSet, basename='vpn-monitor')
+router.register(r'vpn/l2tp', L2TPVPNClientViewSet, basename='vpn-l2tp')
+router.register(r'vpn/openvpn', OpenVPNClientViewSet, basename='vpn-openvpn')
+router.register(r'vpn/audit-log', VPNAuditLogViewSet, basename='vpn-audit-log')
 router.register(r'opcua_node', OPCUANodeViewSet, basename='opcua_node')
 router.register(r'opcua_clientconfig', OpcUaClientConfigViewSet, basename='opcua_clientconfig')
 router.register(r'opcua_readlog', OpcUaReadLogViewSet, basename='read-logs')
@@ -46,6 +56,7 @@ router.register(r'thresholds', TagThresholdViewSet, basename='threshold')
 router.register(r'breaches', ThresholdBreachViewSet, basename='breach')
 router.register(r'alarms', AlarmLogViewSet, basename='alarm')
 router.register(r'alarm-retention-policy', AlarmRetentionPolicyViewSet, basename='alarm-retention-policy')
+router.register(r'device-specs', StationDeviceSpecificationsViewSet, basename='device-specs')
 
 
 
@@ -54,7 +65,7 @@ urlpatterns = [
     path('health/', health_check, name='health-check'),
     path('active-stations/', active_stations_summary, name='active-stations'),
     path('home/', home, name='api-home'),
-    path("api-token-auth/", obtain_auth_token, name="api_token_auth"),
+    path("api-token-auth/", csrf_exempt(obtain_auth_token), name="api_token_auth"),
     path("user/", current_user, name="current-user"), 
     path('tag-names/', views.tag_names, name='tag-names'),  # New endpoint for Tag Names
     path("telemetry/", telemetry_data, name="telemetry-data"),

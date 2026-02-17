@@ -26,15 +26,25 @@ const api = axios.create({
 
 // --- Attach token and dynamic baseURL automatically ---
 api.interceptors.request.use((config) => {
-  // Prefer same-origin proxy in production to avoid CORS
-  const hostname = typeof window !== "undefined" ? window.location.hostname : "";
-  const isProdVps = hostname === "144.91.79.167";
-  config.baseURL = isProdVps ? "/api" : `${getServerUrl()}/api`;
+  // Use different baseURL depending on environment
+  const hostname = window.location.hostname;
   
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers = config.headers ?? {};
-    (config.headers as Record<string, string>).Authorization = `Token ${token}`;
+  if (hostname === '144.91.79.167' || hostname.includes('vps')) {
+    // Production: Use relative path (Nginx proxies to Django)
+    config.baseURL = "/api";
+  } else {
+    // Local development: Direct connection to Django
+    config.baseURL = "http://localhost:8000/api";
+  }
+  
+  try {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers = config.headers ?? {};
+      (config.headers as Record<string, string>).Authorization = `Token ${token}`;
+    }
+  } catch (e) {
+    console.warn("localStorage access blocked - continuing without auth token");
   }
   return config;
 });
@@ -319,6 +329,58 @@ export interface VPNClient {
   status: string;
 }
 
+// -------- VPN Credential Management Types --------
+export interface L2TPVPNClient {
+  id: number;
+  name: string;
+  username: string;
+  vpn_ip: string;
+  server_ip: string;
+  status: 'active' | 'inactive' | 'revoked';
+  expires_at: string;
+  days_until_expiry: number;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  password?: string; // Only in creation response
+  preshared_key?: string; // Only in creation response
+}
+
+export interface OpenVPNClient {
+  id: number;
+  name: string;
+  common_name: string;
+  vpn_ip: string;
+  protocol: 'tcp' | 'udp';
+  port: number;
+  compression_enabled: boolean;
+  status: 'active' | 'inactive' | 'revoked';
+  expires_at: string;
+  days_until_expiry: number;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  certificate?: string; // Only in full retrieve
+  private_key?: string; // Only in full retrieve
+}
+
+export interface VPNAuditLog {
+  id: number;
+  action: string;
+  vpn_type: 'l2tp' | 'openvpn';
+  client_name: string;
+  client_id?: number;
+  admin_user: {
+    id: number;
+    username: string;
+    last_login_time?: string;
+    last_login_ip?: string;
+  };
+  ip_address: string;
+  details?: string;
+  timestamp: string;
+}
+
 export interface VPNStatus {
   total_connections: number;
   openvpn_count: number;
@@ -329,6 +391,166 @@ export interface VPNStatus {
     l2tp: boolean;
   };
   last_updated: string;
+}
+
+// -------- VPN Credential Management (Admin) --------
+// L2TP VPN Clients
+export async function getL2TPClients(): Promise<L2TPVPNClient[]> {
+  interface PaginatedResponse {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: L2TPVPNClient[];
+  }
+  
+  const res = await api.get<PaginatedResponse | L2TPVPNClient[]>("/vpn/l2tp/");
+  
+  // Handle both paginated and non-paginated responses
+  if (Array.isArray(res.data)) {
+    return res.data;
+  } else if ('results' in res.data) {
+    return res.data.results;
+  }
+  
+  return [];
+}
+
+export async function createL2TPClient(data: {
+  name: string;
+  vpn_ip: string;
+  server_ip: string;
+  max_connections?: number;
+}): Promise<L2TPVPNClient> {
+  const res = await api.post<L2TPVPNClient>("/vpn/l2tp/", data);
+  return res.data;
+}
+
+export async function getL2TPClient(id: number): Promise<L2TPVPNClient> {
+  const res = await api.get<L2TPVPNClient>(`/vpn/l2tp/${id}/`);
+  return res.data;
+}
+
+export async function updateL2TPClient(id: number, data: Partial<{
+  name: string;
+  status: string;
+  max_connections: number;
+}>): Promise<L2TPVPNClient> {
+  const res = await api.patch<L2TPVPNClient>(`/vpn/l2tp/${id}/`, data);
+  return res.data;
+}
+
+export async function revokeL2TPClient(id: number): Promise<any> {
+  const res = await api.delete(`/vpn/l2tp/${id}/`);
+  return res.data;
+}
+
+export async function downloadL2TPConfig(id: number): Promise<Blob> {
+  const res = await api.get<Blob>(`/vpn/l2tp/${id}/download_config/`, {
+    responseType: 'blob',
+  });
+  return res.data;
+}
+
+export async function activateL2TPClient(id: number): Promise<L2TPVPNClient> {
+  const res = await api.post<L2TPVPNClient>(`/vpn/l2tp/${id}/activate/`);
+  return res.data;
+}
+
+// OpenVPN Clients
+export async function getOpenVPNClients(): Promise<OpenVPNClient[]> {
+  interface PaginatedResponse {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: OpenVPNClient[];
+  }
+  
+  const res = await api.get<PaginatedResponse | OpenVPNClient[]>("/vpn/openvpn/");
+  
+  // Handle both paginated and non-paginated responses
+  if (Array.isArray(res.data)) {
+    return res.data;
+  } else if ('results' in res.data) {
+    return res.data.results;
+  }
+  
+  return [];
+}
+
+export async function createOpenVPNClient(data: {
+  name: string;
+  protocol?: 'tcp' | 'udp';
+  port?: number;
+  compression_enabled?: boolean;
+}): Promise<OpenVPNClient> {
+  const res = await api.post<OpenVPNClient>("/vpn/openvpn/", data);
+  return res.data;
+}
+
+export async function getOpenVPNClient(id: number): Promise<OpenVPNClient> {
+  const res = await api.get<OpenVPNClient>(`/vpn/openvpn/${id}/`);
+  return res.data;
+}
+
+export async function updateOpenVPNClient(id: number, data: Partial<{
+  name: string;
+  status: string;
+  protocol: string;
+  port: number;
+  compression_enabled: boolean;
+}>): Promise<OpenVPNClient> {
+  const res = await api.patch<OpenVPNClient>(`/vpn/openvpn/${id}/`, data);
+  return res.data;
+}
+
+export async function revokeOpenVPNClient(id: number): Promise<any> {
+  const res = await api.delete(`/vpn/openvpn/${id}/`);
+  return res.data;
+}
+
+export async function downloadOpenVPNConfig(id: number): Promise<Blob> {
+  const res = await api.get<Blob>(`/vpn/openvpn/${id}/download_config/`, {
+    responseType: 'blob',
+  });
+  return res.data;
+}
+
+export async function activateOpenVPNClient(id: number): Promise<OpenVPNClient> {
+  const res = await api.post<OpenVPNClient>(`/vpn/openvpn/${id}/activate/`);
+  return res.data;
+}
+
+// VPN Audit Log
+export async function getVPNAuditLog(filters?: {
+  action?: string;
+  vpn_type?: 'l2tp' | 'openvpn';
+  admin_user_id?: number;
+  timestamp__gte?: string;
+  timestamp__lte?: string;
+}): Promise<VPNAuditLog[]> {
+  interface PaginatedResponse {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: VPNAuditLog[];
+  }
+  
+  const params = new URLSearchParams();
+  if (filters) {
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.append(key, String(value));
+    });
+  }
+  const res = await api.get<PaginatedResponse | VPNAuditLog[]>("/vpn/audit-log/", { params });
+  
+  // Handle both paginated and non-paginated responses
+  if (Array.isArray(res.data)) {
+    return res.data;
+  } else if ('results' in res.data) {
+    return res.data.results;
+  }
+  
+  return [];
 }
 
 export async function fetchVPNStatus(): Promise<VPNStatus> {

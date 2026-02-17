@@ -1,6 +1,6 @@
 
 from django.contrib import admin
-from .models import OpcUaClientConfig, OPCUANode, AuthenticationSetting, TagName, AlarmLog, ThresholdBreach, NotificationRecipient
+from .models import OpcUaClientConfig, OPCUANode, AuthenticationSetting, TagName, AlarmLog, ThresholdBreach, NotificationRecipient, StationDeviceSpecifications
 from roams_opcua_mgr.models import ControlState, ControlStateHistory, ControlPermission, ControlStateRequest
 from roams_opcua_mgr.models.alarm_retention_model import AlarmRetentionPolicy
 from django.utils.html import format_html, mark_safe
@@ -957,3 +957,56 @@ class AlarmRetentionPolicyAdmin(admin.ModelAdmin):
     def has_view_permission(self, request, obj=None):
         """Only superuser/admin can view retention policies"""
         return request.user.is_superuser or request.user.is_staff
+
+
+
+# ============================================================================
+# Station Device Specifications Admin
+# ============================================================================
+@admin.register(StationDeviceSpecifications)
+class StationDeviceSpecificationsAdmin(admin.ModelAdmin):
+    """
+    Admin interface for station device specifications (nameplate data).
+    Stores motor/pump specifications from device nameplates.
+    Used for comparing with real-time data in the Analysis page.
+    """
+    list_display = ('get_station', 'motor_power_rating', 'rated_current', 'rated_flow_rate', 'rated_head', 'device_model', 'manufacturer')
+    list_filter = ('station', 'manufacturer', 'created_at')
+    search_fields = ('station__station_name', 'device_model', 'manufacturer', 'serial_number')
+    readonly_fields = ('created_at', 'updated_at')
+    
+    fieldsets = (
+        ('Station', {
+            'fields': ('station',)
+        }),
+        ('Motor/Pump Specifications', {
+            'fields': ('motor_power_rating', 'rated_current', 'rated_flow_rate', 'rated_head', 'rated_pressure_bar'),
+            'description': 'Enter device nameplate ratings (kW, A, m³/h, m, bar)'
+        }),
+        ('Device Information', {
+            'fields': ('device_model', 'manufacturer', 'serial_number'),
+        }),
+        ('Maintenance', {
+            'fields': ('installation_date', 'last_maintenance', 'notes'),
+            'classes': ('collapse',)
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_station(self, obj):
+        """Display station name"""
+        return obj.station.station_name
+    get_station.short_description = 'Station'
+    get_station.admin_order_field = 'station__station_name'
+    
+    def has_add_permission(self, request):
+        return request.user.is_staff or request.user.is_superuser
+    
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_staff or request.user.is_superuser
+    
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_staff or request.user.is_superuser

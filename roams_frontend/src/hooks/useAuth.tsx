@@ -52,19 +52,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 const login = async (username: string, password: string) => {
-  const serverUrl = getServerUrl();
   try {
+    // Use relative URL to go through NGINX proxy on production
+    const hostname = typeof window !== "undefined" ? window.location.hostname : "";
+    const isProdVps = hostname === "144.91.79.167";
+    const tokenUrl = isProdVps ? "/api/api-token-auth/" : `${getServerUrl()}/api-token-auth/`;
+    
     const res = await axios.post<{ token: string }>(
-      `${serverUrl}/api-token-auth/`,
+      tokenUrl,
       { username, password },
       { timeout: 10000 }
     );
     const token = res.data.token;
-    localStorage.setItem("token", token);
+    try {
+      localStorage.setItem("token", token);
+    } catch (e) {
+      console.warn("localStorage unavailable for token storage");
+    }
     setToken(token);
     await fetchCurrentUser(token);
   } catch (err: any) {
-    console.error(`Login request to ${serverUrl} failed:`, err);
+    console.error(`Login failed:`, err);
     // Re-throw the error with response data intact so Login.tsx can access err.response
     throw err;
   }

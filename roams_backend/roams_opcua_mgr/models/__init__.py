@@ -9,6 +9,7 @@ from .notification_schedule_model import NotificationSchedule
 from .control_state_model import (
     ControlState, ControlStateHistory, ControlPermission, ControlStateRequest
 )
+from .device_specs_model import StationDeviceSpecifications
 
 # Note: TagThreshold has been consolidated into OPCUANode model fields
 # (warning_level, critical_level, severity, threshold_active)

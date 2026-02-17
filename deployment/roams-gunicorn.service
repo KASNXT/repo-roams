@@ -1,0 +1,44 @@
+[Unit]
+Description=ROAMS Django Application (Gunicorn)
+After=network.target postgresql.service redis.service
+Requires=postgresql.service
+
+[Service]
+Type=notify
+User=www-data
+Group=www-data
+
+# Working Directory
+WorkingDirectory=/opt/roams_pro/roams_backend
+
+# Environment
+Environment="PATH=/opt/roams_pro/roams_backend/venv_new/bin"
+Environment="PYTHONUNBUFFERED=1"
+EnvironmentFile=/opt/roams_pro/roams_backend/.env
+
+# Gunicorn Execution
+ExecStart=/opt/roams_pro/roams_backend/venv_new/bin/gunicorn \
+    --config /opt/roams_pro/roams_backend/gunicorn_config.py \
+    roams_pro.wsgi:application
+
+# Process Management
+Restart=always
+RestartSec=10
+KillMode=mixed
+TimeoutStopSec=30
+
+# Runtime Directory
+RuntimeDirectory=roams
+RuntimeDirectoryMode=0755
+
+# Security Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=roams-gunicorn
+
+[Install]
+WantedBy=multi-user.target

@@ -172,12 +172,12 @@ const Index: React.FC = () => {
         <AppSidebar />
         <SidebarInset className="flex-1 flex flex-col max-h-screen overflow-y-auto">
           {/* Top Bar - Sticky on ALL screens */}
-          <header className="sticky top-0 z-50 flex flex-row h-14 md:h-16 shrink-0 items-center gap-2 border-b bg-gradient-surface/95 backdrop-blur supports-[backdrop-filter]:bg-gradient-surface/80 px-2 md:px-4 shadow-sm">
+          <header className="sticky top-0 z-50 flex flex-row h-16 md:h-20 shrink-0 items-center gap-3 border-b bg-gradient-surface/95 backdrop-blur supports-[backdrop-filter]:bg-gradient-surface/80 px-3 md:px-5 shadow-sm">
             <SidebarTrigger className="-ml-1" />
-            <img src="/roamslogo.png" alt="BROMS Logo" className="h-9 md:h-12 w-9 md:w-12 shrink-0" />
+            <img src="/roamslogo.png" alt="BROMS Logo" className="h-11 md:h-14 w-11 md:w-14 shrink-0" />
             <div className="flex-1 min-w-0">
-              <h1 className="text-sm md:text-xl font-bold text-foreground truncate">BROMS</h1>
-              <p className="text-[10px] md:text-xs text-muted-foreground truncate">
+              <h1 className="text-base md:text-2xl font-bold text-foreground truncate">BROMS</h1>
+              <p className="text-xs md:text-sm text-muted-foreground truncate">
                 Bore hole Remote Operation Monitoring System
               </p>
             </div>

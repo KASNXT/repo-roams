@@ -6,6 +6,7 @@ import { TelemetryCharts } from "@/components/analysis/TelemetryCharts";
 import { AlarmsTable } from "@/components/analysis/AlarmsTable";
 import { DatePickerWithRange } from "@/components/analysis/DatePickerWithRange";
 import { ThemeToggle } from "@/components/analysis/ThemeToggle";
+import { RatedVsActualComparison } from "@/components/analysis/RatedVsActualComparison";
 import { UserDisplay } from "@/components/UserDisplay";
 import { TrendingUp, RefreshCw, Download, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ const Analysis = () => {
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [alarmFilter, setAlarmFilter] = useState("all");
+  const [dataLimit, setDataLimit] = useState(1000); // Default to 1000 to avoid memory issues
 
   // --- Station handling ---
   const [stations, setStations] = useState<Station[]>([]);
@@ -63,11 +65,29 @@ const Analysis = () => {
           station,
           from: fromStr,
           to: toStr,
+          page_size: dataLimit, // Use selected data limit
         },
+        timeout: 30000, // 30 second timeout for large datasets
       });
-      return res.data || [];
-    } catch (error) {
+      
+      // ✅ FIX: Handle paginated response structure {count, next, previous, results}
+      const data = (res.data as any)?.results || res.data || [];
+      console.log("📊 Fetched telemetry:", data.length, "records for", station);
+      return data;
+    } catch (error: any) {
       console.error("Error fetching history:", error);
+      
+      // Show user-friendly error messages
+      if (error.response?.status === 500) {
+        toast.error("Server overloaded. Try reducing data points or date range.");
+      } else if (error.code === 'ECONNABORTED') {
+        toast.error("Request timeout. Try reducing data points.");
+      } else if (error.response?.status === 503) {
+        toast.error("Database connection limit reached. Please retry in a moment.");
+      } else {
+        toast.error("Failed to load telemetry data. Please try again.");
+      }
+      
       return [];
     }
   };
@@ -146,7 +166,13 @@ const Analysis = () => {
     let canceled = false;
     const loadHistory = async () => {
       const logs = await fetchHistory(selectedWell, dateRange.from!, dateRange.to!);
-      if (!canceled) setHistoryData(Array.isArray(logs) ? logs : []);
+      if (!canceled) {
+        setHistoryData(Array.isArray(logs) ? logs : []);
+        // Show feedback when data is loaded
+        if (Array.isArray(logs) && logs.length > 0) {
+          toast.success(`Loaded ${logs.length.toLocaleString()} data points`);
+        }
+      }
     };
 
     loadHistory();
@@ -162,7 +188,7 @@ const Analysis = () => {
     return () => {
       canceled = true;
     };
-  }, [selectedWell, dateRange, autoRefresh]);
+  }, [selectedWell, dateRange, autoRefresh, dataLimit]); // Add dataLimit as dependency
 
   // --- Load alarms whenever station or dateRange changes ---
   useEffect(() => {
@@ -196,6 +222,63 @@ const Analysis = () => {
   console.log("📊 History data count:", historyData.length);
   console.log("📊 Sample:", historyData.slice(0, 5));
   }, [historyData]);
+
+  // Extract latest telemetry values for current readings (comparison component)
+  const getCurrentReadings = () => {
+    const latest: any = {
+      current_in_amps: undefined,
+      flow_m3_h: undefined,
+      pressure_bar: undefined,
+      head_m: undefined,
+      power_kw: undefined,
+    };
+
+    // First try to get from most recent history data
+    if (Array.isArray(historyData) && historyData.length > 0) {
+      const recent = historyData[historyData.length - 1];
+      const normalizedRecent = Object.keys(recent).reduce((acc, key) => {
+        acc[normalizeKey(key)] = recent[key];
+        return acc;
+      }, {} as any);
+
+      // Extract common telemetry parameter names
+      latest.current_in_amps = normalizedRecent.current || normalizedRecent.current_in_amps || normalizedRecent.current_a;
+      latest.flow_m3_h = normalizedRecent.flow || normalizedRecent.flow_m3_h || normalizedRecent.flowrate;
+      latest.pressure_bar = normalizedRecent.pressure || normalizedRecent.pressure_bar;
+      latest.head_m = normalizedRecent.head || normalizedRecent.head_m;
+      latest.power_kw = normalizedRecent.power || normalizedRecent.power_kw;
+    }
+
+    // Fallback: extract from nodes' last_value if available
+    if (!latest.current_in_amps && Array.isArray(nodes)) {
+      const currentNode = nodes.find(n => normalizeKey(n.tag_name).includes('current'));
+      if (currentNode?.last_value) latest.current_in_amps = parseFloat(currentNode.last_value);
+    }
+    if (!latest.flow_m3_h && Array.isArray(nodes)) {
+      const flowNode = nodes.find(n => normalizeKey(n.tag_name).includes('flow'));
+      if (flowNode?.last_value) latest.flow_m3_h = parseFloat(flowNode.last_value);
+    }
+    if (!latest.pressure_bar && Array.isArray(nodes)) {
+      const pressureNode = nodes.find(n => normalizeKey(n.tag_name).includes('pressure'));
+      if (pressureNode?.last_value) latest.pressure_bar = parseFloat(pressureNode.last_value);
+    }
+    if (!latest.head_m && Array.isArray(nodes)) {
+      const headNode = nodes.find(n => normalizeKey(n.tag_name).includes('head'));
+      if (headNode?.last_value) latest.head_m = parseFloat(headNode.last_value);
+    }
+    if (!latest.power_kw && Array.isArray(nodes)) {
+      const powerNode = nodes.find(n => normalizeKey(n.tag_name).includes('power'));
+      if (powerNode?.last_value) latest.power_kw = parseFloat(powerNode.last_value);
+    }
+
+    return latest;
+  };
+
+  // Get station ID from selected station
+  const getSelectedStationId = () => {
+    const station = stations.find(s => s.station_name === selectedWell);
+    return station?.id;
+  };
 
 
 
@@ -329,10 +412,6 @@ const Analysis = () => {
                 <h1 className="text-lg md:text-xl font-bold text-foreground truncate">Borehole Analysis</h1>
                 <p className="text-xs text-muted-foreground hidden md:block">Telemetry Data & System Insights</p>
               </div>
-              <div className="flex md:hidden items-center gap-2">
-                <ThemeToggle />
-                <UserDisplay />
-              </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 md:gap-3">
@@ -352,6 +431,19 @@ const Analysis = () => {
 
               <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />
 
+              {/* Data Limit Selector */}
+              <Select value={String(dataLimit)} onValueChange={(val) => setDataLimit(Number(val))}>
+                <SelectTrigger className="w-full md:w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="500">500 pts</SelectItem>
+                  <SelectItem value="1000">1K pts</SelectItem>
+                  <SelectItem value="2000">2K pts</SelectItem>
+                  <SelectItem value="3000">3K pts</SelectItem>
+                </SelectContent>
+              </Select>
+
               <Button variant={autoRefresh ? "default" : "outline"} size="sm" onClick={() => setAutoRefresh(!autoRefresh)} className="flex-1 md:flex-initial">
                 <RefreshCw className={`h-4 w-4 md:mr-2 ${autoRefresh ? "animate-spin" : ""}`} />
                 <span className="hidden md:inline">Auto Refresh</span>
@@ -362,10 +454,8 @@ const Analysis = () => {
                 <span className="hidden md:inline">Export</span>
               </Button>
 
-              <div className="hidden md:flex items-center gap-3">
-                <ThemeToggle />
-                <UserDisplay />
-              </div>
+              <ThemeToggle />
+              <UserDisplay />
             </div>
           </header>
 
@@ -395,6 +485,18 @@ const Analysis = () => {
               <div className="text-center text-muted-foreground p-8">No station selected or available.</div>
             ) : (
               <>
+                {/* Device Specifications Comparison - Shows rated vs actual performance */}
+                {getSelectedStationId() && (
+                  <RatedVsActualComparison
+                    stationId={getSelectedStationId()!}
+                    currentCurrent={getCurrentReadings().current_in_amps}
+                    currentFlowRate={getCurrentReadings().flow_m3_h}
+                    currentPressureBar={getCurrentReadings().pressure_bar}
+                    currentHead={getCurrentReadings().head_m}
+                    currentPower={getCurrentReadings().power_kw}
+                  />
+                )}
+
                 {/* Pass both real-time and historical data to TelemetryCharts */}
                 <TelemetryCharts
                   wellId={selectedWell}

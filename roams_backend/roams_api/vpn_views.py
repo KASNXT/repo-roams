@@ -355,3 +355,322 @@ class VPNMonitorViewSet(viewsets.ViewSet):
             'message': f'Disconnect functionality for {vpn_type} not yet implemented',
             'client_id': client_id
         }, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+
+# ============================================================================
+# VPN CLIENT MANAGEMENT VIEWSETS (Admin-Only)
+# ============================================================================
+
+from .models import L2TPVPNClient, OpenVPNClient, VPNAuditLog
+from .vpn_serializers import (
+    L2TPVPNClientSerializer, L2TPVPNClientCreateSerializer,
+    OpenVPNClientSerializer, OpenVPNClientCreateSerializer,
+    VPNAuditLogSerializer
+)
+from django.http import FileResponse
+import io
+
+
+class L2TPVPNClientViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for L2TP/IPsec VPN Client management
+    Admin-only access
+    """
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    queryset = L2TPVPNClient.objects.all()
+    
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return L2TPVPNClientCreateSerializer
+        return L2TPVPNClientSerializer
+    
+    def create(self, request, *args, **kwargs):
+        """Create new L2TP client with audit logging"""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        
+        # Log audit event
+        VPNAuditLog.objects.create(
+            action='create',
+            vpn_type='l2tp',
+            client_name=instance.name,
+            client_id=instance.id,
+            admin_user=request.user,
+            ip_address=self._get_client_ip(request),
+            details=f"Created L2TP client: {instance.username} -> {instance.vpn_ip}"
+        )
+        
+        return Response(
+            L2TPVPNClientSerializer(instance).data,
+            status=status.HTTP_201_CREATED
+        )
+    
+    def destroy(self, request, *args, **kwargs):
+        """Revoke L2TP client instead of deleting"""
+        instance = self.get_object()
+        instance.status = 'revoked'
+        instance.save()
+        
+        # Log audit event
+        VPNAuditLog.objects.create(
+            action='revoke',
+            vpn_type='l2tp',
+            client_name=instance.name,
+            client_id=instance.id,
+            admin_user=request.user,
+            ip_address=self._get_client_ip(request),
+            details=f"Revoked L2TP client: {instance.username}"
+        )
+        
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    @action(detail=True, methods=['get'])
+    def download_config(self, request, pk=None):
+        """Download L2TP configuration file"""
+        client = self.get_object()
+        
+        # Generate config file content
+        config_content = self._generate_l2tp_config(client)
+        
+        # Log audit event
+        VPNAuditLog.objects.create(
+            action='download',
+            vpn_type='l2tp',
+            client_name=client.name,
+            client_id=client.id,
+            admin_user=request.user,
+            ip_address=self._get_client_ip(request),
+            details=f"Downloaded config for: {client.username}"
+        )
+        
+        # Return as file
+        response = FileResponse(
+            io.BytesIO(config_content.encode()),
+            content_type='text/plain'
+        )
+        response['Content-Disposition'] = f'attachment; filename="L2TP_{client.name}.txt"'
+        return response
+    
+    @action(detail=True, methods=['post'])
+    def activate(self, request, pk=None):
+        """Activate revoked client"""
+        client = self.get_object()
+        client.status = 'active'
+        client.save()
+        
+        VPNAuditLog.objects.create(
+            action='activate',
+            vpn_type='l2tp',
+            client_name=client.name,
+            client_id=client.id,
+            admin_user=request.user,
+            ip_address=self._get_client_ip(request),
+            details=f"Activated L2TP client: {client.username}"
+        )
+        
+        return Response(L2TPVPNClientSerializer(client).data)
+    
+    def _generate_l2tp_config(self, client):
+        """Generate L2TP configuration guide"""
+        config = f"""
+═══════════════════════════════════════════════════════════════
+  L2TP/IPsec VPN Configuration for {client.name}
+  Generated: {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}
+  Valid until: {client.expires_at.strftime('%Y-%m-%d')}
+═══════════════════════════════════════════════════════════════
+
+[CLIENT INFORMATION]
+Name:           {client.name}
+Status:         {client.status.upper()}
+Assigned IP:    {client.vpn_ip}
+VPN IP:         {client.vpn_ip}/32
+
+[AUTHENTICATION CREDENTIALS]
+Username:       {client.username}
+Password:       {client.password}
+Pre-Shared Key: {client.preshared_key}
+
+[SERVER CONFIGURATION]
+Server IP:      {client.server_ip}
+Max Connections: {client.max_connections}
+
+[L2TP/IPsec SETTINGS]
+Protocol:       L2TP over IPsec
+Authentication: PSK (Pre-Shared Key)
+Encryption:     AES-128/256 (default)
+Hash:           SHA1/SHA256 (default)
+
+[ROUTER CONFIGURATION STEPS]
+1. Go to VPN Settings → L2TP/IPsec
+2. Enable L2TP/IPsec VPN
+3. Enter your username and password above
+4. Set Server: {client.server_ip}
+5. Enter Pre-Shared Key (PSK) from above
+6. Enable IPsec with PSK authentication
+7. Save and connect
+
+[SECURITY NOTES]
+⚠️  Expires: {client.expires_at.strftime('%Y-%m-%d')}
+⚠️  Keep credentials secure
+⚠️  Do not share PSK with others
+⚠️  Request new credentials after expiration
+
+[SUPPORT]
+For assistance, contact: admin@broms.local
+"""
+        return config
+    
+    def _get_client_ip(self, request):
+        """Get client IP from request"""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            return x_forwarded_for.split(',')[0]
+        return request.META.get('REMOTE_ADDR')
+
+
+class OpenVPNClientViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for OpenVPN Client management
+    Admin-only access
+    """
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    queryset = OpenVPNClient.objects.all()
+    
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return OpenVPNClientCreateSerializer
+        return OpenVPNClientSerializer
+    
+    def create(self, request, *args, **kwargs):
+        """Create new OpenVPN client"""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        
+        VPNAuditLog.objects.create(
+            action='create',
+            vpn_type='openvpn',
+            client_name=instance.name,
+            client_id=instance.id,
+            admin_user=request.user,
+            ip_address=self._get_client_ip(request),
+            details=f"Created OpenVPN client: {instance.common_name} -> {instance.vpn_ip}"
+        )
+        
+        return Response(
+            OpenVPNClientSerializer(instance).data,
+            status=status.HTTP_201_CREATED
+        )
+    
+    def destroy(self, request, *args, **kwargs):
+        """Revoke OpenVPN client"""
+        instance = self.get_object()
+        instance.status = 'revoked'
+        instance.save()
+        
+        VPNAuditLog.objects.create(
+            action='revoke',
+            vpn_type='openvpn',
+            client_name=instance.name,
+            client_id=instance.id,
+            admin_user=request.user,
+            ip_address=self._get_client_ip(request),
+            details=f"Revoked OpenVPN client: {instance.common_name}"
+        )
+        
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    @action(detail=True, methods=['get'])
+    def download_config(self, request, pk=None):
+        """Download OpenVPN .ovpn configuration file"""
+        client = self.get_object()
+        
+        config_content = self._generate_ovpn_config(client)
+        
+        VPNAuditLog.objects.create(
+            action='download',
+            vpn_type='openvpn',
+            client_name=client.name,
+            client_id=client.id,
+            admin_user=request.user,
+            ip_address=self._get_client_ip(request),
+            details=f"Downloaded config for: {client.common_name}"
+        )
+        
+        response = FileResponse(
+            io.BytesIO(config_content.encode()),
+            content_type='text/plain'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{client.name}.ovpn"'
+        return response
+    
+    def _generate_ovpn_config(self, client):
+        """Generate .ovpn configuration"""
+        config = f"""# OpenVPN Configuration for {client.name}
+# Generated: {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}
+# Valid until: {client.expires_at.strftime('%Y-%m-%d')}
+
+client
+dev tun
+proto {client.protocol}
+remote 144.91.79.167 {client.port}
+resolv-retry infinite
+nobind
+persist-key
+persist-tun
+
+ca ca.crt
+cert {client.common_name}.crt
+key {client.common_name}.key
+
+{'compress lz4' if client.compression_enabled else '# compression disabled'}
+
+verb 3
+mute 20
+
+# Security
+cipher AES-256-CBC
+auth SHA256
+
+# Network
+ifconfig-pool-persist ipp.txt
+"""
+        return config
+    
+    def _get_client_ip(self, request):
+        """Get client IP from request"""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            return x_forwarded_for.split(',')[0]
+        return request.META.get('REMOTE_ADDR')
+
+
+class VPNAuditLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet for viewing VPN audit logs
+    Admin-only access
+    """
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    queryset = VPNAuditLog.objects.all()
+    serializer_class = VPNAuditLogSerializer
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        # Filter by action
+        action_filter = self.request.query_params.get('action')
+        if action_filter:
+            queryset = queryset.filter(action=action_filter)
+        
+        # Filter by VPN type
+        vpn_type = self.request.query_params.get('vpn_type')
+        if vpn_type:
+            queryset = queryset.filter(vpn_type=vpn_type)
+        
+        # Filter by admin user
+        user_id = self.request.query_params.get('user_id')
+        if user_id:
+            queryset = queryset.filter(admin_user_id=user_id)
+        
+        return queryset

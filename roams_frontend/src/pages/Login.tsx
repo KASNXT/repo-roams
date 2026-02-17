@@ -38,7 +38,7 @@ const LoginPage: React.FC = () => {
       await login(username, password); // calls AuthProvider
       toast({
         title: "Welcome back!",
-        description: "Successfully logged in to ROAMS",
+        description: "Successfully logged in to BROMS",
       });
       navigate("/"); // go to dashboard
     } catch (err: any) {
@@ -89,23 +89,23 @@ const LoginPage: React.FC = () => {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center relative bg-cover bg-center"
-      style={{ backgroundImage: "url('/roamsbgimg.jpg')" }}
+      className="min-h-screen flex items-center justify-center relative bg-center sm:bg-cover bg-gradient-to-br from-primary/10 to-primary/5"
+      style={{ backgroundImage: "url('/roamsbgimg.jpg')", backgroundAttachment: "fixed" }}
     >
-      <div className="absolute inset-0 bg-black/50"></div>
+      <div className="absolute inset-0 bg-black/40 sm:bg-black/50"></div>
 
-      <Card className="w-full max-w-md shadow-card relative z-10">
-        <CardHeader className="text-center">
+      <Card className="w-[90%] sm:w-full max-w-md shadow-card relative z-10 rounded-2xl">
+        <CardHeader className="text-center px-4 sm:px-6">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <img src="/roamslogo.png" alt="BROMS Logo" className="h-16 w-16" />
+            <img src="/roamslogo.png" alt="BROMS Logo" className="h-12 w-12 sm:h-16 sm:w-16" />
           </div>
-          <CardTitle>Welcome to BROMS</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl sm:text-2xl">Welcome to BROMS</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">
             Bore hole Remote Operation Monitoring System
           </CardDescription>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="px-4 sm:px-6">
           <Tabs defaultValue="login" className="space-y-4">        <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>

@@ -12,7 +12,8 @@ import {
   LogOut,
   MapPin,
   Database,
-  Wifi
+  Wifi,
+  Lock
 } from "lucide-react";
 import {
   Sidebar,
@@ -33,6 +34,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { fetchStations, Station } from "@/services/api";
 
@@ -43,6 +50,7 @@ const navigationItems = [
   { title: "Control", url: "/control", icon: Sliders },
   { title: "Overview", url: "/overview", icon: TrendingUp },
   { title: "Settings", url: "/settings", icon: Settings },
+  { title: "VPN Connections", url: "/vpn-connections", icon: Lock, adminOnly: true },
 ];
 
 export function AppSidebar() {
@@ -107,69 +115,55 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="border-r border-sidebar-border">
-      <SidebarContent className="flex flex-col h-full">
-        {/* Logo Section */}
-        <div className="flex items-center gap-2 p-4 border-b border-sidebar-border">
-          <img src="/roamslogo.png" alt="BROMS Logo" className="h-12 w-12 md:h-12 md:w-12"/>
-          {!isCollapsed && (
-            <div>
-              <h1 className="text-xl font-bold text-sidebar-foreground">BROMS</h1>
+    <TooltipProvider>
+      <Sidebar className="border-r border-sidebar-border">
+        <SidebarContent className="flex flex-col h-full">
+          {/* Logo Section */}
+          <div className="flex flex-row items-center gap-3 p-4 border-b border-sidebar-border">
+            <img src="/roamslogo.png" alt="BROMS Logo" className="h-12 w-12 shrink-0"/>
+            <div className="flex-1">
+              <h1 className="text-lg font-bold text-sidebar-foreground leading-tight">BROMS</h1>
               <p className="text-xs text-sidebar-foreground/60">Monitoring System</p>
             </div>
-          )}
-        </div>
+          </div>
 
         {/* Station Selector */}
         <div className="px-4 py-3 border-b border-sidebar-border">
-          {!isCollapsed ? (
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-sidebar-foreground/60">Active Station</label>
-              <Select value={selectedStation} onValueChange={handleStationChange}>
-                <SelectTrigger className="w-full h-9">
-                  <SelectValue placeholder="Select Station" />
-                </SelectTrigger>
-                <SelectContent>
-                  {stations.map((station) => (
-                    <SelectItem key={station.id} value={station.station_name}>
-                      <div className="flex items-center gap-2">
-                        <div className={`h-2 w-2 rounded-full ${station.active ? 'bg-green-500' : 'bg-gray-400'}`} />
-                        {station.station_name}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : (
-            <div className="flex justify-center">
-              <MapPin className="h-5 w-5 text-primary" />
-            </div>
-          )}
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-sidebar-foreground/60">Active Station</label>
+            <Select value={selectedStation} onValueChange={handleStationChange}>
+              <SelectTrigger className="w-full h-9">
+                <SelectValue placeholder="Select Station" />
+              </SelectTrigger>
+              <SelectContent>
+                {stations.map((station) => (
+                  <SelectItem key={station.id} value={station.station_name}>
+                    <div className="flex items-center gap-2">
+                      <div className={`h-2 w-2 rounded-full ${station.active ? 'bg-green-500' : 'bg-gray-400'}`} />
+                      {station.station_name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* System Status Indicators */}
         <div className="px-4 py-3 border-b border-sidebar-border">
-          {!isCollapsed ? (
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-sidebar-foreground/60 mb-2">System Status</p>
-              <div className="flex items-center gap-2 text-xs">
-                <Wifi className="h-3 w-3" />
-                <span className="flex-1">OPC UA</span>
-                <div className={`h-2 w-2 rounded-full ${systemStatus.opcua ? 'bg-green-500' : 'bg-red-500'}`} />
-              </div>
-              <div className="flex items-center gap-2 text-xs">
-                <Database className="h-3 w-3" />
-                <span className="flex-1">Database</span>
-                <div className={`h-2 w-2 rounded-full ${systemStatus.database ? 'bg-green-500' : 'bg-red-500'}`} />
-              </div>
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-sidebar-foreground/60 mb-2">System Status</p>
+            <div className="flex items-center gap-2 text-xs">
+              <Wifi className={`h-3 w-3 ${systemStatus.opcua ? 'text-green-500' : 'text-red-500'}`} />
+              <span className="flex-1">OPC UA</span>
+              <div className={`h-2 w-2 rounded-full ${systemStatus.opcua ? 'bg-green-500' : 'bg-red-500'}`} />
             </div>
-          ) : (
-            <div className="flex flex-col items-center gap-2">
-              <Wifi className={`h-4 w-4 ${systemStatus.opcua ? 'text-green-500' : 'text-red-500'}`} />
-              <Database className={`h-4 w-4 ${systemStatus.database ? 'text-green-500' : 'text-red-500'}`} />
+            <div className="flex items-center gap-2 text-xs">
+              <Database className={`h-3 w-3 ${systemStatus.database ? 'text-green-500' : 'text-red-500'}`} />
+              <span className="flex-1">Database</span>
+              <div className={`h-2 w-2 rounded-full ${systemStatus.database ? 'bg-green-500' : 'bg-red-500'}`} />
             </div>
-          )}
+          </div>
         </div>
 
         {/* Navigation */}
@@ -177,20 +171,25 @@ export function AppSidebar() {
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navigationItems.map((item) => {
+              {navigationItems
+                .filter((item) => !item.adminOnly || (item.adminOnly && (user?.is_staff || user?.role === "admin")))
+                .map((item) => {
                 const isActive = location.pathname === item.url;
                 return (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton 
-                      asChild
-                      className={isActive ? "bg-sidebar-accent text-sidebar-primary" : ""}
-                    >
-                      <NavLink to={item.url} className="flex items-center gap-3 py-3 md:py-2">
-                        {/* Larger icons on mobile (h-7 w-7), normal on desktop (h-4 w-4) */}
-                        <item.icon className="h-7 w-7 md:h-4 md:w-4" />
-                        {!isCollapsed && <span className="text-base md:text-sm">{item.title}</span>}
-                        {!isCollapsed && isActive && (
-                          <ChevronRight className="h-5 w-5 md:h-4 md:w-4 ml-auto" />
+                    <SidebarMenuButton asChild>
+                      <NavLink 
+                        to={item.url} 
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
+                          isActive 
+                            ? "bg-sidebar-accent text-sidebar-primary hover:bg-sidebar-accent" 
+                            : "hover:bg-sidebar-accent/30"
+                        }`}
+                      >
+                        <item.icon className="h-5 w-5 shrink-0" />
+                        <span className="text-sm flex-1">{item.title}</span>
+                        {!isCollapsed && (
+                          <ChevronRight className="h-4 w-4 shrink-0" />
                         )}
                       </NavLink>
                     </SidebarMenuButton>
@@ -203,53 +202,36 @@ export function AppSidebar() {
 
         {/* User Profile Section */}
         <div className="p-4 border-t border-sidebar-border">
-          {!isCollapsed ? (
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <User className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{user?.username || "User"}</p>
-                <p className="text-xs text-muted-foreground capitalize">
-                  {user?.role || (user?.is_staff ? "Admin" : "Operator")}
-                </p>
-              </div>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={handleLogout}
-                className="flex-shrink-0 h-8 w-8"
-                title="Logout"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <User className="h-5 w-5 text-primary" />
             </div>
-          ) : (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium">{user?.username || "User"}</p>
+              <p className="text-xs text-muted-foreground capitalize">
+                {user?.role || (user?.is_staff ? "Admin" : "Operator")}
+              </p>
+            </div>
             <Button 
               variant="ghost" 
               size="icon" 
-              className="w-full"
               onClick={handleLogout}
+              className="flex-shrink-0 h-8 w-8"
               title="Logout"
             >
-              <User className="h-5 w-5" />
+              <LogOut className="h-4 w-4" />
             </Button>
-          )}
+          </div>
         </div>
 
         {/* Copyright Footer */}
         <div className="px-4 py-3 border-t border-sidebar-border">
-          {!isCollapsed ? (
-            <p className="text-xs text-center text-sidebar-foreground/60">
-              © 2026 BROMS. All rights reserved.
-            </p>
-          ) : (
-            <p className="text-xs text-center text-sidebar-foreground/60">
-              © 2026
-            </p>
-          )}
+          <p className="text-xs text-center text-sidebar-foreground/60">
+            © 2026 BROMS. All rights reserved.
+          </p>
         </div>
       </SidebarContent>
     </Sidebar>
+    </TooltipProvider>
   );
 }

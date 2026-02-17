@@ -1,0 +1,28 @@
+[Unit]
+Description=ROAMS Django Application
+After=network.target postgresql.service pgbouncer.service
+Wants=postgresql.service pgbouncer.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/roams/roams_backend
+Environment="PATH=/opt/roams/roams_backend/venv_new/bin"
+ExecStart=/opt/roams/roams_backend/venv_new/bin/python manage.py runserver 0.0.0.0:8000 --nothreading --noreload
+
+# Auto-restart configuration
+Restart=always
+RestartSec=10
+StartLimitInterval=300
+StartLimitBurst=5
+
+# Kill hung processes
+TimeoutStopSec=30
+KillMode=mixed
+
+# Memory limits (optional - prevents memory leaks from crashing server)
+MemoryMax=500M
+MemoryHigh=400M
+
+[Install]
+WantedBy=multi-user.target

@@ -42,9 +42,9 @@ export const UserDisplay = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-8 w-8">
-            <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+          <Avatar className="h-10 w-10">
+            <AvatarFallback className="text-sm font-semibold">{initials}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -67,7 +67,7 @@ export const UserDisplay = () => {
           onClick={logout}
           className="cursor-pointer text-red-600 focus:text-red-600"
         >
-          <LogOut className="mr-2 h-4 w-4" />
+          <LogOut className="mr-2 h-5 w-5" />
           Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>

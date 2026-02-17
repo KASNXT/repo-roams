@@ -16,6 +16,7 @@ import Overview from "./pages/Overview";
 import NotFound from "./pages/NotFound";
 import Control from "./pages/control";
 import StationMapFullPage from "./pages/StationMapFullPage";
+import VPNConnections from "./pages/VPNConnections";
 import {useAuth } from "@/hooks/useAuth";
 
 const queryClient = new QueryClient();
@@ -100,6 +101,14 @@ const App = () => {
                 element={
                   <PrivateRoute>
                     <StationMapFullPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/vpn-connections"
+                element={
+                  <PrivateRoute>
+                    <VPNConnections />
                   </PrivateRoute>
                 }
               />

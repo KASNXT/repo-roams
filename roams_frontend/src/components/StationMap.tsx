@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import * as L from 'leaflet';
 import api from "@/services/api";
 import { Button } from "@/components/ui/button";
-import { Loader2, Satellite, MapPin, Zap, Droplets, TrendingUp, AlertCircle, Maximize2 } from "lucide-react";
+import { Loader2, Satellite, MapPin, Zap, Droplets, TrendingUp, AlertCircle, Maximize2, RotateCcw, Expand } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -393,53 +393,107 @@ export const StationMap = ({ fullPage = false }: StationMapProps) => {
   return (
     <div className={fullPage ? "h-full w-full flex flex-col" : "space-y-3"}>
       {/* Controls */}
-      <div className={fullPage ? "border-b p-4 bg-card shadow-sm flex items-center gap-2" : "flex items-center gap-2"}>
+      <div className={fullPage ? "border-b p-2 md:p-4 bg-card shadow-sm flex items-center gap-1 md:gap-2 flex-wrap" : "flex items-center gap-1 md:gap-2 flex-wrap"}>
+        {/* Street/Satellite Toggle */}
         <Button
           onClick={() => setIsSatellite(!isSatellite)}
           variant={isSatellite ? "default" : "outline"}
           size="sm"
-          className="gap-2"
+          title={isSatellite ? "Switch to Street view" : "Switch to Satellite view"}
+          className="hidden sm:flex gap-2"
         >
           <Satellite className="h-4 w-4" />
-          {isSatellite ? "Satellite" : "Street"}
+          <span className="hidden md:inline">{isSatellite ? "Satellite" : "Street"}</span>
+        </Button>
+        
+        {/* Icon-only version for mobile */}
+        <Button
+          onClick={() => setIsSatellite(!isSatellite)}
+          variant={isSatellite ? "default" : "outline"}
+          size="icon"
+          title={isSatellite ? "Switch to Street view" : "Switch to Satellite view"}
+          className="sm:hidden h-9 w-9"
+        >
+          <Satellite className="h-4 w-4" />
         </Button>
 
+        {/* Refresh Button */}
         <Button
           onClick={fetchStationsData}
           variant="outline"
           size="sm"
           disabled={loading}
-          className="gap-2"
+          title="Refresh map data"
+          className="hidden sm:flex gap-2"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
-          {loading ? "Loading..." : "Refresh"}
+          <span className="hidden md:inline">{loading ? "Loading..." : "Refresh"}</span>
+        </Button>
+        
+        {/* Icon-only refresh for mobile */}
+        <Button
+          onClick={fetchStationsData}
+          variant="outline"
+          size="icon"
+          disabled={loading}
+          title="Refresh map data"
+          className="sm:hidden h-9 w-9"
+        >
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
         </Button>
 
+        {/* Reset Zoom Button */}
         <Button
           onClick={resetZoom}
           variant="outline"
           size="sm"
           title="Reset map zoom to default level"
-          className="gap-2"
+          className="hidden sm:flex gap-2"
         >
-          <Maximize2 className="h-4 w-4" />
-          Reset Zoom
+          <RotateCcw className="h-4 w-4" />
+          <span className="hidden md:inline">Reset Zoom</span>
+        </Button>
+        
+        {/* Icon-only reset zoom for mobile */}
+        <Button
+          onClick={resetZoom}
+          variant="outline"
+          size="icon"
+          title="Reset map zoom to default level"
+          className="sm:hidden h-9 w-9"
+        >
+          <RotateCcw className="h-4 w-4" />
         </Button>
 
+        {/* Full View Button */}
         {!fullPage && (
-          <Button
-            onClick={() => navigate("/map")}
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
-            <Maximize2 className="h-4 w-4" />
-            Full View
-          </Button>
+          <>
+            <Button
+              onClick={() => navigate("/map")}
+              variant="outline"
+              size="sm"
+              title="Open map in fullscreen"
+              className="hidden sm:flex gap-2"
+            >
+              <Expand className="h-4 w-4" />
+              <span className="hidden md:inline">Full View</span>
+            </Button>
+            
+            {/* Icon-only full view for mobile */}
+            <Button
+              onClick={() => navigate("/map")}
+              variant="outline"
+              size="icon"
+              title="Open map in fullscreen"
+              className="sm:hidden h-9 w-9"
+            >
+              <Expand className="h-4 w-4" />
+            </Button>
+          </>
         )}
 
-        <span className="text-xs text-muted-foreground ml-auto">
-          {stations.length} station{stations.length !== 1 ? "s" : ""} on map
+        <span className="text-xs text-muted-foreground ml-auto whitespace-nowrap">
+          {stations.length} station{stations.length !== 1 ? "s" : ""}
         </span>
       </div>
 

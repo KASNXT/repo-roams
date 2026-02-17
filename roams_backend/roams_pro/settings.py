@@ -69,6 +69,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://192.168.1.100:5173',  # Windows Wi-Fi IP for phone access
     'http://192.168.1.100:8000',  # Windows backend access
     'http://144.91.79.167',  # Contabo VPS - Nginx port 80
+    'https://144.91.79.167',  # Contabo VPS - Nginx HTTPS
     'http://144.91.79.167:3000',  # Contabo VPS - Frontend dev server
     'http://144.91.79.167:5173',  # Contabo VPS - Vite dev server
     'http://144.91.79.167:8000',  # Contabo VPS - Django direct access
@@ -95,6 +96,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'roams_api.middleware.LastLoginTrackerMiddleware',  # Track last login for admin audit
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'roams_pro.middleware.AdminTimeoutMiddleware',  # Add timeout management for admin
@@ -103,12 +105,12 @@ MIDDLEWARE = [
 # ==================== PRODUCTION SECURITY SETTINGS ====================
 # SSL/HTTPS configuration (only enforced when DEBUG=False)
 if not DEBUG:
-    SECURE_SSL_REDIRECT = True  # Redirect all HTTP to HTTPS
-    SESSION_COOKIE_SECURE = True  # Send session cookies only over HTTPS
-    CSRF_COOKIE_SECURE = True  # Send CSRF cookies only over HTTPS
-    SECURE_HSTS_SECONDS = 31536000  # 1 year HSTS (HTTP Strict Transport Security)
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
+    SECURE_SSL_REDIRECT = env.bool('SECURE_SSL_REDIRECT', default=False)  # Allow override via .env
+    SESSION_COOKIE_SECURE = env.bool('SESSION_COOKIE_SECURE', default=SECURE_SSL_REDIRECT)
+    CSRF_COOKIE_SECURE = env.bool('CSRF_COOKIE_SECURE', default=SECURE_SSL_REDIRECT)
+    SECURE_HSTS_SECONDS = 31536000 if SECURE_SSL_REDIRECT else 0
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_SSL_REDIRECT
+    SECURE_HSTS_PRELOAD = SECURE_SSL_REDIRECT
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  # Trust NGINX proxy
     SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent MIME type sniffing
     X_FRAME_OPTIONS = 'DENY'  # Prevent clickjacking
@@ -153,9 +155,9 @@ CSRF_TRUSTED_ORIGINS = [
     'http://192.168.1.100:5173',  # Windows Wi-Fi IP for phone access
     'http://192.168.1.100:8000',  # Windows backend access
     'http://144.91.79.167',  # Contabo VPS - Frontend (Nginx port 80)
+    'https://144.91.79.167',  # Contabo VPS - HTTPS
     'http://144.91.79.167:8000',  # Contabo VPS - Django direct access
-    # Add HTTPS when SSL is configured
-    # 'https://144.91.79.167',
+    # Add your domain when SSL is configured
     # 'https://roams.yourdomain.com',
 ]
 

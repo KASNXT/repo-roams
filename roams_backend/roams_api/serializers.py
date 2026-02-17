@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from roams_opcua_mgr.models import (
     OPCUANode, OpcUaClientConfig, OpcUaReadLog, ThresholdBreach, 
-    NotificationRecipient, AlarmLog, AlarmRetentionPolicy
+    NotificationRecipient, AlarmLog, AlarmRetentionPolicy, StationDeviceSpecifications
 )
 from rest_framework import viewsets, permissions
 from django.utils.timezone import now, timedelta
@@ -306,3 +306,68 @@ class AlarmRetentionPolicySerializer(serializers.ModelSerializer):
             'updated_at',
         ]
         read_only_fields = ['last_cleanup_at', 'created_at', 'updated_at']
+
+
+# Serializer for Station Device Specifications (nameplate data)
+class StationDeviceSpecificationsSerializer(serializers.ModelSerializer):
+    """
+    Serializer for device specifications (motor power rating, rated current, flow, head/pressure).
+    Used for comparing rated vs actual performance metrics in analysis.
+    
+    Supports both head (m) and pressure (bar) measurements:
+    - rated_head: Direct head measurement in meters
+    - rated_pressure_bar: Pressure measurement (auto-converts to head for comparison)
+    
+    Conversion: 1 bar = 10.197 meters of head (for water at sea level)
+    """
+    station_name = serializers.CharField(source="station.station_name", read_only=True)
+    effective_rated_head = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = StationDeviceSpecifications
+        fields = [
+            'id',
+            'station',
+            'station_name',
+            'motor_power_rating',
+            'rated_current',
+            'rated_flow_rate',
+            'rated_head',
+            'rated_pressure_bar',
+            'effective_rated_head',
+            'device_model',
+            'manufacturer',
+            'serial_number',
+            'installation_date',
+            'last_maintenance',
+            'notes',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['created_at', 'updated_at', 'effective_rated_head']
+    
+    def get_effective_rated_head(self, obj):
+        """Return effective rated head, converting from pressure if needed"""
+        return obj.get_effective_rated_head()
+
+
+# Enhanced OpcUaClientConfigSerializer to include device specs
+class OpcUaClientConfigDetailedSerializer(serializers.ModelSerializer):
+    """Extended version of OpcUaClientConfigSerializer that includes device specifications."""
+    device_specs = StationDeviceSpecificationsSerializer(read_only=True)
+    
+    class Meta:
+        model = OpcUaClientConfig
+        fields = [
+            'id',
+            "station_name",
+            "endpoint_url",
+            "active",
+            "last_connected",
+            "created_at",
+            "connection_status",
+            "security_policy",
+            "latitude",
+            "longitude",
+            "device_specs"
+        ]
