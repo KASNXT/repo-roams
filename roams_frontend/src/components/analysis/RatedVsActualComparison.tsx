@@ -54,12 +54,12 @@ export function RatedVsActualComparison({
     const fetchSpecs = async () => {
       try {
         setLoading(true);
-        const response = await api.get(`/device-specs/by_station/?station_id=${stationId}`);
+        const response = await api.get<DeviceSpecs>(`/device-specs/by_station/?station_id=${stationId}`);
         setSpecs(response.data);
 
         // Calculate metrics if current readings are available
         if (response.data) {
-          const metricsResponse = await api.post(`/device-specs/${response.data.id}/compare_metrics/`, {
+          const metricsResponse = await api.post<{ performance_metrics: ComparisonMetrics }>(`/device-specs/${response.data.id}/compare_metrics/`, {
             current_current: currentCurrent,
             current_flow: currentFlowRate,
             current_head: currentHead,
