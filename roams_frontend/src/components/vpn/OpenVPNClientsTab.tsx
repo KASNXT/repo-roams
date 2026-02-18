@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,7 +37,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Download, Plus, Trash2, RefreshCw, Copy, Check } from "lucide-react";
-import { Loader2 } from "lucide-react";
 import {
   getOpenVPNClients,
   createOpenVPNClient,
@@ -45,6 +44,8 @@ import {
   revokeOpenVPNClient,
   activateOpenVPNClient,
   OpenVPNClient,
+  fetchStations,
+  Station,
 } from "@/services/api";
 
 export function OpenVPNClientsTab() {
@@ -57,7 +58,21 @@ export function OpenVPNClientsTab() {
     protocol: "udp" as const,
     port: 1194,
     compression_enabled: true,
+    station: "" as string,
   });
+
+  const [stations, setStations] = useState<Station[]>([]);
+  const [stationsLoading, setStationsLoading] = useState(false);
+
+  useEffect(() => {
+    if (openCreate) {
+      setStationsLoading(true);
+      fetchStations().then((data) => {
+        setStations(data);
+        setStationsLoading(false);
+      });
+    }
+  }, [openCreate]);
 
   const { data: clients = [], isLoading, refetch } = useQuery({
     queryKey: ["openvpn-clients"],
@@ -69,7 +84,7 @@ export function OpenVPNClientsTab() {
     onSuccess: () => {
       refetch();
       setOpenCreate(false);
-      setFormData({ name: "", protocol: "udp", port: 1194, compression_enabled: true });
+      setFormData({ name: "", protocol: "udp", port: 1194, compression_enabled: true, station: "" });
     },
   });
 
@@ -114,6 +129,10 @@ export function OpenVPNClientsTab() {
   const handleCreate = () => {
     if (!formData.name) {
       alert("Please enter a client name");
+      return;
+    }
+    if (!formData.station) {
+      alert("Please select a station");
       return;
     }
     createMutation.mutate(formData);
@@ -175,6 +194,25 @@ export function OpenVPNClientsTab() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="mt-1"
                   />
+                </div>
+                <div>
+                  <Label htmlFor="station">Station *</Label>
+                  <Select
+                    value={formData.station}
+                    onValueChange={(val: string) => setFormData({ ...formData, station: val })}
+                    disabled={stationsLoading}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder={stationsLoading ? "Loading stations..." : "Select station"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {stations.map((station) => (
+                        <SelectItem key={station.id} value={station.id.toString()}>
+                          {station.station_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

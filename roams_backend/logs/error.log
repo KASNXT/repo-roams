@@ -6480,3 +6480,325 @@ ERROR 2026-02-18 01:31:16,849 opcua_client [31m❌ Failed to connect to Ggaba_F
 ERROR 2026-02-18 01:31:51,422 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
 ERROR 2026-02-18 01:32:05,784 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
 ERROR 2026-02-18 01:32:06,192 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:32:28,488 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:32:58,240 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:32:58,619 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:33:05,553 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:33:42,591 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:33:50,549 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:33:50,860 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:34:18,226 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:34:45,259 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:34:43,395 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:34:55,277 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:35:32,426 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:35:37,630 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:35:38,102 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:36:09,442 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:36:30,277 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:36:30,337 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:36:44,029 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:37:21,031 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:37:22,621 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:37:22,786 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:37:58,070 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:38:14,888 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:38:15,209 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:38:35,139 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:39:09,580 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:39:09,992 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:39:13,286 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:39:47,862 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:40:01,836 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:40:02,273 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:40:24,888 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:40:54,103 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:40:54,564 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:41:01,990 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:41:39,072 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:41:46,320 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:41:46,924 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:42:13,645 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:42:41,022 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:42:41,831 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:42:51,768 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:43:28,857 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:43:33,231 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:43:34,352 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:44:05,977 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:44:25,437 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:44:26,538 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:44:40,501 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:45:17,522 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:45:17,613 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:45:18,842 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:45:54,533 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:46:09,754 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:46:11,243 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:46:31,662 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:47:04,574 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:47:05,908 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:47:08,732 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:47:43,317 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:47:56,821 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:47:58,148 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:48:20,323 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:48:49,011 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:48:50,630 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:48:57,468 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:49:34,482 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:49:41,270 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:49:43,040 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:50:09,048 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:50:35,940 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:50:37,878 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:50:46,047 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:51:23,096 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:51:28,156 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:51:30,263 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:52:00,308 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:52:20,354 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:52:22,816 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:52:37,290 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:53:11,832 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:53:12,686 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:53:15,269 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:53:48,823 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:54:07,314 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:54:07,467 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:54:25,920 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:54:59,469 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:55:02,452 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:55:03,114 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:55:37,594 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:55:51,605 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:55:54,958 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:56:14,678 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:56:43,784 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:56:47,581 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:56:51,702 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:57:28,714 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:57:36,065 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:57:39,929 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:58:06,050 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:58:30,704 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:58:35,121 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:58:43,086 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:59:20,134 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 01:59:22,846 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:59:27,251 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 01:59:57,234 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 02:00:15,038 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 02:00:19,455 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 02:00:34,299 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 02:01:07,168 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 02:01:08,824 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 02:01:11,609 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 02:01:45,845 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:11:11,140 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:11:25,822 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:11:26,088 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:11:44,829 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:12:17,496 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:12:17,949 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:12:21,497 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:12:58,153 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:13:08,941 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:13:09,550 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:13:34,829 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:14:03,459 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:14:03,910 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:14:08,549 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:14:45,204 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:14:55,158 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:14:55,401 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:15:21,857 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:15:46,747 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:15:46,796 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:15:58,514 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:16:35,159 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:16:38,049 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:16:38,346 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:17:09,992 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:17:32,596 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:17:32,610 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:17:47,771 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:18:23,939 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:18:24,104 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:18:24,431 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:19:03,306 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:19:15,327 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:19:15,506 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:19:37,036 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:20:06,729 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:20:07,370 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:20:13,691 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:20:50,393 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:21:01,062 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:20:59,122 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:21:27,025 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:21:52,460 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:21:53,741 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:22:00,706 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:22:37,362 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:22:44,148 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:22:45,844 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:23:14,004 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:23:35,483 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:23:37,516 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:23:50,675 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:24:27,326 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:24:26,811 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:24:28,935 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:25:01,070 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:25:21,109 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:25:23,442 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:25:39,927 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:26:12,594 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:26:14,935 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:26:17,146 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:26:53,808 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:27:03,882 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:27:06,282 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:27:30,839 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:27:55,374 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:27:57,692 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:28:07,513 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:28:44,173 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:28:49,624 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:28:49,148 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:29:20,842 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:29:40,952 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:29:43,413 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:29:55,135 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:30:32,350 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:30:32,379 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:30:34,889 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:31:09,019 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:31:23,710 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:31:26,212 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:31:45,679 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:32:15,143 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:32:17,799 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:32:19,956 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:32:57,732 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:33:09,525 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:33:12,230 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:33:35,480 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:34:01,151 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:34:04,062 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:34:13,246 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:34:47,510 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:34:52,645 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:34:55,715 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:35:24,756 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:35:44,094 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:35:47,289 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:36:02,464 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:36:38,420 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:36:39,693 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:36:39,439 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:37:13,414 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:37:29,905 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:37:34,175 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:37:53,390 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:38:21,386 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:38:25,812 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:38:30,044 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:39:06,541 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:39:12,798 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:39:17,360 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:39:44,310 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:40:07,070 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:40:08,957 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:40:20,948 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:40:57,623 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:40:58,639 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:41:03,457 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:41:06,808 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:41:24,548 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:41:24,959 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:41:34,297 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:41:43,455 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:41:50,083 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:41:54,812 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:42:08,019 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:42:15,909 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:42:18,619 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:42:20,122 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:42:41,560 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:42:44,661 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:42:46,335 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:42:56,760 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:43:07,250 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:43:12,063 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:43:21,904 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:43:30,532 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:43:33,347 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:43:37,684 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:43:58,570 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:44:01,506 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:44:03,375 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:44:07,198 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:44:27,738 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:44:28,948 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:44:32,297 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:44:43,854 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:44:53,856 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:44:57,520 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:45:08,955 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:45:20,633 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:45:23,777 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:45:23,796 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:45:45,079 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:45:47,273 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:45:50,555 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:46:01,169 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:46:11,965 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:46:15,923 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:46:23,942 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:46:36,286 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:46:39,692 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:46:42,403 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:46:57,659 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:47:03,203 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:47:08,353 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:47:16,347 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:47:27,532 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:47:34,335 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:47:35,502 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:47:54,821 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:47:55,961 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:47:59,912 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:48:12,093 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:48:23,239 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:48:27,918 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:48:29,516 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:48:51,494 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:48:52,066 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:48:52,684 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:49:08,947 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:49:15,755 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:49:22,273 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:49:29,779 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:49:43,708 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:49:45,616 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:49:48,845 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:50:06,287 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:50:08,699 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:50:13,796 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:50:22,232 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:50:36,889 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:50:40,525 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:50:45,203 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:50:59,827 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:51:02,034 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:51:05,164 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:51:19,545 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:51:29,577 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:51:33,250 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:51:37,595 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:51:53,600 opcua_client [31m❌ Failed to connect to Lutete Bore hole after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:51:56,101 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m
+ERROR 2026-02-18 10:51:56,427 opcua_client [31m❌ Failed to connect to testing after 3 attempts: [Errno 22] Invalid argument[0m
+ERROR 2026-02-18 10:52:14,260 opcua_client [31m❌ Failed to connect to Ggaba_FAT after 3 attempts: [Errno 113] No route to host[0m

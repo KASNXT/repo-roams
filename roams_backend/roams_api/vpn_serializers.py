@@ -15,15 +15,18 @@ class L2TPVPNClientSerializer(serializers.ModelSerializer):
     is_expired = serializers.SerializerMethodField()
     days_until_expiry = serializers.SerializerMethodField()
     
+    from roams_opcua_mgr.models import OpcUaClientConfig
+    station = serializers.PrimaryKeyRelatedField(queryset=OpcUaClientConfig.objects.all(), required=True)
+    station_name = serializers.CharField(source='station.station_name', read_only=True)
     class Meta:
         model = L2TPVPNClient
         fields = [
             'id', 'name', 'username', 'vpn_ip', 'server_ip',
             'max_connections', 'status', 'created_at', 'updated_at',
             'expires_at', 'is_expired', 'days_until_expiry',
-            'created_by_username'
+            'created_by_username', 'station', 'station_name'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'expires_at', 'created_by_username']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'expires_at', 'created_by_username', 'station_name']
     
     def get_is_expired(self, obj):
         return obj.is_expired()
@@ -37,11 +40,13 @@ class L2TPVPNClientCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating L2TP VPN Client with auto-generated credentials"""
     auto_generate = serializers.BooleanField(default=True, write_only=True)
     
+    from roams_opcua_mgr.models import OpcUaClientConfig
+    station = serializers.PrimaryKeyRelatedField(queryset=OpcUaClientConfig.objects.all(), required=True)
     class Meta:
         model = L2TPVPNClient
         fields = [
             'name', 'username', 'password', 'preshared_key',
-            'vpn_ip', 'server_ip', 'max_connections', 'auto_generate'
+            'vpn_ip', 'server_ip', 'max_connections', 'auto_generate', 'station'
         ]
     
     def create(self, validated_data):
@@ -62,17 +67,20 @@ class OpenVPNClientSerializer(serializers.ModelSerializer):
     is_expired = serializers.SerializerMethodField()
     days_until_expiry = serializers.SerializerMethodField()
     
+    from roams_opcua_mgr.models import OpcUaClientConfig
+    station = serializers.PrimaryKeyRelatedField(queryset=OpcUaClientConfig.objects.all(), required=True)
+    station_name = serializers.CharField(source='station.station_name', read_only=True)
     class Meta:
         model = OpenVPNClient
         fields = [
             'id', 'name', 'common_name', 'vpn_ip', 'protocol', 'port',
             'compression_enabled', 'status', 'created_at', 'updated_at',
             'expires_at', 'is_expired', 'days_until_expiry',
-            'created_by_username'
+            'created_by_username', 'station', 'station_name'
         ]
         read_only_fields = [
             'id', 'certificate', 'private_key', 'created_at',
-            'updated_at', 'expires_at', 'created_by_username'
+            'updated_at', 'expires_at', 'created_by_username', 'station_name'
         ]
     
     def get_is_expired(self, obj):
@@ -88,11 +96,13 @@ class OpenVPNClientCreateSerializer(serializers.ModelSerializer):
     certificate = serializers.CharField(write_only=True, required=False)
     private_key = serializers.CharField(write_only=True, required=False)
     
+    from roams_opcua_mgr.models import OpcUaClientConfig
+    station = serializers.PrimaryKeyRelatedField(queryset=OpcUaClientConfig.objects.all(), required=True)
     class Meta:
         model = OpenVPNClient
         fields = [
             'name', 'common_name', 'vpn_ip', 'protocol', 'port',
-            'compression_enabled', 'certificate', 'private_key'
+            'compression_enabled', 'certificate', 'private_key', 'station'
         ]
     
     def create(self, validated_data):

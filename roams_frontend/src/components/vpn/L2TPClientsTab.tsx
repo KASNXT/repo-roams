@@ -21,6 +21,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -29,8 +36,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Download, Plus, Trash2, RefreshCw, Copy, Check } from "lucide-react";
-import { Loader2 } from "lucide-react";
+import { Download, Plus, Trash2, RefreshCw, Copy, Check, Loader2 } from "lucide-react";
 import {
   getL2TPClients,
   createL2TPClient,
@@ -38,6 +44,8 @@ import {
   revokeL2TPClient,
   activateL2TPClient,
   L2TPVPNClient,
+  fetchStations,
+  Station,
 } from "@/services/api";
 
 export function L2TPClientsTab() {
@@ -50,7 +58,21 @@ export function L2TPClientsTab() {
     vpn_ip: "10.99.0.",
     server_ip: "144.91.79.167",
     max_connections: 1,
+    station: "" as string,
   });
+
+  const [stations, setStations] = useState<Station[]>([]);
+  const [stationsLoading, setStationsLoading] = useState(false);
+
+  useEffect(() => {
+    if (openCreate) {
+      setStationsLoading(true);
+      fetchStations().then((data) => {
+        setStations(data);
+        setStationsLoading(false);
+      });
+    }
+  }, [openCreate]);
 
   const { data: clients = [], isLoading, refetch } = useQuery({
     queryKey: ["l2tp-vpn-clients"],
@@ -62,7 +84,7 @@ export function L2TPClientsTab() {
     onSuccess: () => {
       refetch();
       setOpenCreate(false);
-      setFormData({ name: "", vpn_ip: "10.99.0.", server_ip: "144.91.79.167", max_connections: 1 });
+      setFormData({ name: "", vpn_ip: "10.99.0.", server_ip: "144.91.79.167", max_connections: 1, station: "" });
     },
   });
 
@@ -107,6 +129,10 @@ export function L2TPClientsTab() {
   const handleCreate = () => {
     if (!formData.name || !formData.vpn_ip || !formData.server_ip) {
       alert("Please fill in all required fields");
+      return;
+    }
+    if (!formData.station) {
+      alert("Please select a station");
       return;
     }
     createMutation.mutate(formData);
@@ -168,6 +194,25 @@ export function L2TPClientsTab() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="mt-1"
                   />
+                </div>
+                <div>
+                  <Label htmlFor="station">Station *</Label>
+                  <Select
+                    value={formData.station}
+                    onValueChange={(val: string) => setFormData({ ...formData, station: val })}
+                    disabled={stationsLoading}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder={stationsLoading ? "Loading stations..." : "Select station"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {stations.map((station) => (
+                        <SelectItem key={station.id} value={station.id.toString()}>
+                          {station.station_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="vpn_ip">VPN IP Address (10.99.0.x) *</Label>

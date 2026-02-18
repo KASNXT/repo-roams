@@ -109,6 +109,13 @@ class L2TPVPNClient(models.Model):
         unique=True,
         help_text="Client name (e.g., Bombo_BH, Nakasongola)"
     )
+
+    station = models.ForeignKey(
+        'roams_opcua_mgr.OpcUaClientConfig',
+        on_delete=models.PROTECT,
+        related_name='l2tp_vpn_clients',
+        help_text="Associated station for this VPN client"
+    )
     
     username = models.CharField(
         max_length=50,
@@ -194,6 +201,13 @@ class OpenVPNClient(models.Model):
         max_length=100,
         unique=True,
         help_text="Client name (e.g., admin_laptop, station_control)"
+    )
+
+    station = models.ForeignKey(
+        'roams_opcua_mgr.OpcUaClientConfig',
+        on_delete=models.PROTECT,
+        related_name='openvpn_clients',
+        help_text="Associated station for this VPN client"
     )
     
     common_name = models.CharField(

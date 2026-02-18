@@ -420,6 +420,7 @@ export async function createL2TPClient(data: {
   vpn_ip: string;
   server_ip: string;
   max_connections?: number;
+  station: string;
 }): Promise<L2TPVPNClient> {
   const res = await api.post<L2TPVPNClient>("/vpn/l2tp/", data);
   return res.data;
@@ -482,6 +483,7 @@ export async function createOpenVPNClient(data: {
   protocol?: 'tcp' | 'udp';
   port?: number;
   compression_enabled?: boolean;
+  station: string;
 }): Promise<OpenVPNClient> {
   const res = await api.post<OpenVPNClient>("/vpn/openvpn/", data);
   return res.data;
