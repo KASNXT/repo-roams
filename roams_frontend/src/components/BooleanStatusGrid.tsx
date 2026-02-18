@@ -62,7 +62,7 @@ function BooleanStatusItem({
           {/* Label */}
           <div>
             <p className="text-sm font-medium text-muted-foreground">{label}</p>
-            <p className="text-2xl font-bold mt-1">{value ? '✓ ON' : '✗ OFF'}</p>
+            <p className="text-2xl font-bold mt-1">{value ? '✓ HIGH' : '✗ LOW'}</p>
           </div>
 
           {/* Description */}

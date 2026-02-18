@@ -89,11 +89,7 @@ export function GaugeCard({
                 className={cn("transition-all duration-300", gaugeColors[status])}
               />
             </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className={cn("text-xs font-semibold", statusColors[status])}>
-                {Math.round(clampedPercentage)}%
-              </span>
-            </div>
+            {/* Removed percentage text, only show the circular bar visually */}
           </div>
         </div>
       </CardContent>
