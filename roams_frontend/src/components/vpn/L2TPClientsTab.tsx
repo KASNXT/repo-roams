@@ -59,6 +59,11 @@ export function L2TPClientsTab() {
     server_ip: "144.91.79.167",
     max_connections: 1,
     station: "" as string,
+    username: "",
+    password: "",
+    preshared_key: "",
+    auto_generate: true,
+    expires_at: "", // ISO date string
   });
 
   const [stations, setStations] = useState<Station[]>([]);
@@ -84,7 +89,18 @@ export function L2TPClientsTab() {
     onSuccess: () => {
       refetch();
       setOpenCreate(false);
-      setFormData({ name: "", vpn_ip: "10.99.0.", server_ip: "144.91.79.167", max_connections: 1, station: "" });
+      setFormData({
+        name: "",
+        vpn_ip: "10.99.0.",
+        server_ip: "144.91.79.167",
+        max_connections: 1,
+        station: "",
+        username: "",
+        password: "",
+        preshared_key: "",
+        auto_generate: true,
+        expires_at: "",
+      });
     },
   });
 
@@ -135,6 +151,10 @@ export function L2TPClientsTab() {
       alert("Please select a station");
       return;
     }
+    if (!formData.auto_generate && (!formData.username || !formData.password || !formData.preshared_key)) {
+      alert("Please provide username, password, and PSK for manual entry");
+      return;
+    }
     createMutation.mutate(formData);
   };
 
@@ -181,60 +201,70 @@ export function L2TPClientsTab() {
               <DialogHeader>
                 <DialogTitle>Create L2TP VPN Client</DialogTitle>
                 <DialogDescription>
-                  Create a new L2TP/IPsec client. Credentials will be auto-generated.
+                  Create a new L2TP/IPsec client. You can auto-generate credentials or enter them manually.
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
+              <div className="space-y-4 w-full sm:w-[400px] mx-auto max-h-[70vh] overflow-y-auto">
                 <div>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.auto_generate}
+                      onChange={e => setFormData({ ...formData, auto_generate: e.target.checked })}
+                    />
+                    Auto-generate credentials
+                  </label>
+                </div>
+                <div className="w-full">
                   <Label htmlFor="name">Client Name *</Label>
                   <Input
                     id="name"
                     placeholder="e.g., Bombo_Station"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="mt-1"
+                    className="mt-1 w-full"
                   />
                 </div>
-                <div>
+                <div className="w-full">
                   <Label htmlFor="station">Station *</Label>
                   <Select
-                    value={formData.station}
+                    value={formData.station ? formData.station.toString() : ""}
                     onValueChange={(val: string) => setFormData({ ...formData, station: val })}
                     disabled={stationsLoading}
                   >
-                    <SelectTrigger className="mt-1">
+                    <SelectTrigger className="mt-1 w-full">
                       <SelectValue placeholder={stationsLoading ? "Loading stations..." : "Select station"} />
                     </SelectTrigger>
                     <SelectContent>
                       {stations.map((station) => (
                         <SelectItem key={station.id} value={station.id.toString()}>
-                          {station.station_name}
+                          {station.station_name} (ID: {station.id})
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
+                <div className="w-full">
                   <Label htmlFor="vpn_ip">VPN IP Address (10.99.0.x) *</Label>
                   <Input
                     id="vpn_ip"
                     placeholder="10.99.0.50"
                     value={formData.vpn_ip}
                     onChange={(e) => setFormData({ ...formData, vpn_ip: e.target.value })}
-                    className="mt-1"
+                    className="mt-1 w-full"
                   />
                 </div>
-                <div>
+                <div className="w-full">
                   <Label htmlFor="server_ip">VPN Server IP *</Label>
                   <Input
                     id="server_ip"
                     placeholder="144.91.79.167"
                     value={formData.server_ip}
                     onChange={(e) => setFormData({ ...formData, server_ip: e.target.value })}
-                    className="mt-1"
+                    className="mt-1 w-full"
                   />
                 </div>
-                <div>
+                <div className="w-full">
                   <Label htmlFor="max_connections">Max Connections</Label>
                   <Input
                     id="max_connections"
@@ -242,9 +272,54 @@ export function L2TPClientsTab() {
                     min="1"
                     value={formData.max_connections}
                     onChange={(e) => setFormData({ ...formData, max_connections: parseInt(e.target.value) })}
-                    className="mt-1"
+                    className="mt-1 w-full"
                   />
                 </div>
+                <div className="w-full">
+                  <Label htmlFor="expires_at">Expires At (Permanent if left blank)</Label>
+                  <Input
+                    id="expires_at"
+                    type="date"
+                    value={formData.expires_at}
+                    onChange={e => setFormData({ ...formData, expires_at: e.target.value })}
+                    className="mt-1 w-full"
+                  />
+                </div>
+                {!formData.auto_generate && (
+                  <div className="max-h-48 overflow-y-auto rounded border border-gray-200 bg-white p-2">
+                    <div>
+                      <Label htmlFor="username">Username *</Label>
+                      <Input
+                        id="username"
+                        placeholder="Enter username"
+                        value={formData.username}
+                        onChange={e => setFormData({ ...formData, username: e.target.value })}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="password">Password *</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="Enter password"
+                        value={formData.password}
+                        onChange={e => setFormData({ ...formData, password: e.target.value })}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="preshared_key">Pre-shared Key (PSK) *</Label>
+                      <Input
+                        id="preshared_key"
+                        placeholder="Enter PSK"
+                        value={formData.preshared_key}
+                        onChange={e => setFormData({ ...formData, preshared_key: e.target.value })}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                )}
                 <Button onClick={handleCreate} className="w-full" disabled={createMutation.isPending}>
                   {createMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   Create Client

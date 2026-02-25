@@ -421,8 +421,10 @@ export async function createL2TPClient(data: {
   server_ip: string;
   max_connections?: number;
   station: string;
+  auto_generate?: boolean;
 }): Promise<L2TPVPNClient> {
-  const res = await api.post<L2TPVPNClient>("/vpn/l2tp/", data);
+  const payload = { ...data, auto_generate: true };
+  const res = await api.post<L2TPVPNClient>("/vpn/l2tp/", payload);
   return res.data;
 }
 

@@ -1,0 +1,10 @@
+  pid  | usename  | application_name | client_addr | state  
+-------+----------+------------------+-------------+--------
+ 15711 | postgres |                  |             | 
+ 15710 |          |                  |             | 
+ 23755 | postgres | psql             |             | active
+ 15704 |          |                  |             | 
+ 15703 |          |                  |             | 
+ 15709 |          |                  |             | 
+(6 rows)
+

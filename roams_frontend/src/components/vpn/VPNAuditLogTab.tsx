@@ -78,7 +78,7 @@ export function VPNAuditLogTab() {
         log.action,
         log.vpn_type,
         log.client_name,
-        log.admin_user.username,
+        (log.admin_user && log.admin_user.username) ? log.admin_user.username : "Unknown User",
         log.ip_address || "N/A",
         log.details || "",
       ]),
@@ -210,8 +210,8 @@ export function VPNAuditLogTab() {
                     <TableCell className="font-medium">{log.client_name}</TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{log.admin_user.username}</div>
-                        {log.admin_user.last_login_time && (
+                        <div className="font-medium">{log.admin_user?.username || "Unknown User"}</div>
+                        {log.admin_user?.last_login_time && (
                           <div className="text-xs text-muted-foreground">
                             Last login: {format(new Date(log.admin_user.last_login_time), "MMM dd, yyyy HH:mm")}
                           </div>

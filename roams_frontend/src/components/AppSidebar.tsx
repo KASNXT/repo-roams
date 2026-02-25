@@ -50,7 +50,7 @@ const navigationItems = [
   { title: "Control", url: "/control", icon: Sliders },
   { title: "Overview", url: "/overview", icon: TrendingUp },
   { title: "Settings", url: "/settings", icon: Settings },
-  { title: "VPN Connections", url: "/vpn-connections", icon: Lock, adminOnly: true },
+  // { title: "VPN Connections", url: "/vpn-connections", icon: Lock, adminOnly: true }, // Removed from sidebar
 ];
 
 export function AppSidebar() {
@@ -171,9 +171,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navigationItems
-                .filter((item) => !item.adminOnly || (item.adminOnly && (user?.is_staff || user?.role === "admin")))
-                .map((item) => {
+              {navigationItems.map((item) => {
                 const isActive = location.pathname === item.url;
                 return (
                   <SidebarMenuItem key={item.title}>

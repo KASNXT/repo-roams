@@ -37,6 +37,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Download, Plus, Trash2, RefreshCw, Copy, Check } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import {
   getOpenVPNClients,
   createOpenVPNClient,

@@ -63,7 +63,7 @@ Configure each station with its specific credentials:
 |---------|----------|----------|-----------------|
 | **Bombo** | `bombo` | `Bombo2026!` | `10.99.0.2` |
 | **Nakasongola** | `nakasongola` | `Nakasongola2026!` | `10.99.0.3` |
-| **Lutete** | `lutete` | `Lutete2026!` | `10.99.0.4` |
+| **Kakungulu** | `kakungulu` | `Kakungulu2026!` | `10.99.0.4` |
 | **Kampala** | `kampala` | `Kampala2026!` | `10.99.0.5` |
 | **Abusha** | `abusha` | `Abusha2026!` | `10.99.0.6` |
 
@@ -343,6 +343,16 @@ sudo tail -f /var/log/syslog | grep -E 'xl2tpd|charon'
 ```bash
 sudo systemctl restart strongswan-starter xl2tpd
 ```
+
+**SSH to VPS for Troubleshooting**:
+```bash
+# From your local machine
+ssh root@144.91.79.167
+# Or use your admin user if root login is disabled
+ssh admin@144.91.79.167
+```
+
+Once connected via SSH, you can run all diagnostic and management commands directly on the VPS as shown above.
 
 **Check Firewall**:
 ```bash
