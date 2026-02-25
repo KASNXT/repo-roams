@@ -64,3 +64,8 @@ htmlcov/
 
 # Documentation (keep in repo, but you can comment these out if you want to ignore them)
 # *.md
+.env
+logs/
+__pycache__/
+*.pyc
+*.log
