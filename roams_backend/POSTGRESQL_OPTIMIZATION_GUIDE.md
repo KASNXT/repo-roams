@@ -11,7 +11,9 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '5432',
         'CONN_MAX_AGE': 600,
-        'OPTIONS': {
+        'OPTIONS': {        ip route del 192.168.2.0/24
+        ip route del 192.168.3.0/24        ip route del 192.168.2.0/24
+        ip route del 192.168.3.0/24
             'connect_timeout': 10,
             'statement_timeout': 300000,  # 5 minutes in milliseconds
             'options': '-c statement_timeout=300000'

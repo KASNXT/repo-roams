@@ -48,6 +48,7 @@ class L2TPVPNClientCreateSerializer(serializers.ModelSerializer):
             'name', 'username', 'password', 'preshared_key',
             'vpn_ip', 'server_ip', 'max_connections', 'auto_generate', 'station'
         ]
+        read_only_fields = ['username', 'password', 'preshared_key']
     
     def create(self, validated_data):
         auto_generate = validated_data.pop('auto_generate', True)

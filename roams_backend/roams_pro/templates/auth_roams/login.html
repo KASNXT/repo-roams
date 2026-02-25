@@ -105,24 +105,114 @@
   <div class="overlay"></div>
   <div class="card">
     <div class="logo">
-      <img src="{% static 'img/roamslogo.png' %}" alt="BROMS Logo">
+      <img src="{% static 'img/roamslogo.png' %}" alt="BROMS Logo" />
     </div>
     <div class="title">Welcome to BROMS</div>
     <div class="desc">Bore hole Remote Operation Monitoring System</div>
     <div class="form-container">
-      <form method="post" action="{% url 'login' %}?next={{ request.GET.next }}">
+      <form method="post" action="{% url 'login' %}?next={{ request.GET.next }}" autocomplete="on">
         {% csrf_token %}
         {% if form.errors %}
           <div class="error-message">Invalid username or password.</div>
         {% endif %}
-        <label for="username">Username</label>
-        <input type="text" name="username" id="username" placeholder="Enter Username" required>
-        <label for="password">Password</label>
-        <input type="password" name="password" id="password" placeholder="Enter Password" required>
-        <button type="submit">Sign In</button>
+        <div class="input-group">
+          <label for="username">Username</label>
+          <input type="text" name="username" id="username" placeholder="Enter Username" required autocomplete="username" />
+        </div>
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input type="password" name="password" id="password" placeholder="Enter Password" required autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn-primary">Sign In</button>
       </form>
     </div>
   </div>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Abel&display=swap');
+    body {
+      font-family: 'Inter', 'Abel', Arial, sans-serif;
+    }
+    .card {
+      background: #fff;
+      border-radius: 1.2rem;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+      padding: 1.2rem 1rem;
+      max-width: 320px;
+      margin: 1.5rem auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .logo img {
+      height: 72px;
+      width: 72px;
+      margin-bottom: 0.7rem;
+    }
+    .title {
+      font-size: 1.2rem;
+      font-family: 'Abel', 'Inter', Arial, sans-serif;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+    .desc {
+      font-size: 0.95rem;
+      color: #555;
+      margin-bottom: 1rem;
+      text-align: center;
+      font-family: 'Inter', Arial, sans-serif;
+    }
+    .form-container {
+      width: 100%;
+    }
+    .input-group {
+      margin-bottom: 0.35rem;
+      width: 100%;
+    }
+    label {
+      display: block;
+      font-size: 0.92rem;
+      font-weight: 500;
+      margin-bottom: 0.18rem;
+      font-family: 'Inter', Arial, sans-serif;
+    }
+    input[type='text'],
+    input[type='password'] {
+      width: 100%;
+      padding: 0.35rem 0.6rem;
+      border-radius: 0.4rem;
+      border: 1px solid #c7d2fe;
+      font-size: 0.97rem;
+      background: #f9fafb;
+      margin-bottom: 0.08rem;
+      font-family: 'Inter', Arial, sans-serif;
+    }
+    .btn-primary {
+      width: 100%;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 0.4rem;
+      padding: 0.5rem;
+      font-size: 0.97rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-family: 'Inter', Arial, sans-serif;
+    }
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+    .error-message {
+      color: #dc2626;
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+      text-align: center;
+      font-family: 'Inter', Arial, sans-serif;
+    }
+  </style>
 </body>
 </html>
     </div>
