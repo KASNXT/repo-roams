@@ -53,11 +53,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 const login = async (username: string, password: string) => {
   try {
-    // Use correct endpoint for production (no /api/ prefix)
-    const hostname = typeof window !== "undefined" ? window.location.hostname : "";
-    const isProdVps = hostname === "144.91.79.167";
-    const tokenUrl = isProdVps ? "/api-token-auth/" : `${getServerUrl()}/api-token-auth/`;
-
+    // Always use '/api-token-auth/' endpoint (no /api/ prefix)
+    const tokenUrl = "/api-token-auth/";
     const res = await axios.post<{ token: string }>(
       tokenUrl,
       { username, password },
