@@ -111,9 +111,9 @@ class VPNMonitorViewSet(viewsets.ViewSet):
         """
         try:
             from roams_opcua_mgr.models import OpcUaClientConfig
-            
+            from roams_api.models import L2TPVPNClient
+            from roams_api.serializers import L2TPVPNClientSerializer
             clients = []
-            
             # Get IPSec tunnel information for duration tracking
             ipsec_tunnels = {}
             try:
@@ -123,16 +123,11 @@ class VPNMonitorViewSet(viewsets.ViewSet):
                     text=True,
                     timeout=5
                 )
-                
                 if result.returncode == 0:
-                    # Parse IPSec status for connection establishment times
-                    # Example: "road-warrior[3]: ESTABLISHED 2 hours ago, 10.99.0.2[%any]...144.91.79.167[144.91.79.167]"
                     for line in result.stdout.split('\n'):
                         if 'ESTABLISHED' in line:
-                            # Extract client IP and duration
                             client_match = re.search(r'(\d+\.\d+\.\d+\.\d+)\[', line)
                             time_match = re.search(r'ESTABLISHED\s+(.+?),', line)
-                            
                             if client_match and time_match:
                                 client_ip = client_match.group(1)
                                 duration_str = time_match.group(1).strip()
@@ -142,8 +137,6 @@ class VPNMonitorViewSet(viewsets.ViewSet):
                                 }
             except (FileNotFoundError, subprocess.TimeoutExpired):
                 pass
-            
-            # Try to get PPP connections (L2TP uses PPP)
             try:
                 result = subprocess.run(
                     ['ip', 'addr', 'show'],
@@ -151,25 +144,18 @@ class VPNMonitorViewSet(viewsets.ViewSet):
                     text=True,
                     timeout=5
                 )
-                
                 if result.returncode == 0:
-                    # Parse ip addr output for ppp interfaces
                     lines = result.stdout.split('\n')
                     for i, line in enumerate(lines):
-                        # Look for ppp interfaces: "125: ppp0: <POINTOPOINT..."
                         if re.match(r'^\d+: ppp\d+:', line):
-                            # Next line usually has: "inet 10.99.0.1 peer 10.99.0.2/32"
                             if i + 2 < len(lines):
                                 inet_line = lines[i + 2]
                                 match = re.search(r'inet (\d+\.\d+\.\d+\.\d+) peer (\d+\.\d+\.\d+\.\d+)', inet_line)
                                 if match:
                                     server_ip = match.group(1)
                                     client_ip = match.group(2)
-                                    
-                                    # Try to find station name by matching VPN IP
                                     station_name = 'L2TP Station'
                                     try:
-                                        # Check if any station has this VPN IP in its configuration
                                         station = OpcUaClientConfig.objects.filter(
                                             endpoint_url__contains=client_ip
                                         ).first()
@@ -177,10 +163,7 @@ class VPNMonitorViewSet(viewsets.ViewSet):
                                             station_name = station.station_name
                                     except:
                                         pass
-                                    
-                                    # Get duration from IPSec tunnel info if available
                                     duration = ipsec_tunnels.get(client_ip, {}).get('duration', None)
-                                    
                                     clients.append({
                                         'name': station_name,
                                         'ip_address': client_ip,
@@ -195,6 +178,16 @@ class VPNMonitorViewSet(viewsets.ViewSet):
                 pass
             except subprocess.TimeoutExpired:
                 pass
+
+            # Get all configured clients from DB
+            configured_clients = L2TPVPNClient.objects.all()
+            configured_clients_serialized = L2TPVPNClientSerializer(configured_clients, many=True).data
+
+            return Response({
+                'server_running': True,
+                'clients': clients,
+                'configured_clients': configured_clients_serialized
+            })
             
             # Try xl2tpd status
             try:

@@ -162,6 +162,35 @@ export function VPNConnections() {
           <span className="text-2xl font-bold text-primary">{vpnData?.total_connections || 0}</span>
         </div>
 
+        {/* L2TP Configured Clients Breakdown */}
+        {vpnData?.l2tp_count > 0 && vpnData?.configured_clients && (
+          <div className="border rounded-lg p-3 bg-muted/10">
+            <div className="mb-2 font-semibold text-sm text-purple-700">Configured L2TP Clients</div>
+            <table className="w-full text-xs">
+              <thead>
+                <tr>
+                  <th className="text-left py-1 px-2">Name</th>
+                  <th className="text-left py-1 px-2">Username</th>
+                  <th className="text-left py-1 px-2">VPN IP</th>
+                  <th className="text-left py-1 px-2">Status</th>
+                  <th className="text-left py-1 px-2">Expires</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vpnData.configured_clients.map((client: any) => (
+                  <tr key={client.id} className="border-b">
+                    <td className="py-1 px-2">{client.name}</td>
+                    <td className="py-1 px-2">{client.username}</td>
+                    <td className="py-1 px-2">{client.vpn_ip}</td>
+                    <td className="py-1 px-2">{client.status}</td>
+                    <td className="py-1 px-2">{client.expires_at ? new Date(client.expires_at).toLocaleDateString() : 'N/A'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
         {/* Connected Clients Table */}
         {vpnData && vpnData.clients && vpnData.clients.length > 0 ? (
           <div className="overflow-x-auto border rounded-lg">

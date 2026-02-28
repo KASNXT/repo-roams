@@ -53,11 +53,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 const login = async (username: string, password: string) => {
   try {
-    // Use relative URL to go through NGINX proxy on production
+    // Use correct endpoint for production (no /api/ prefix)
     const hostname = typeof window !== "undefined" ? window.location.hostname : "";
     const isProdVps = hostname === "144.91.79.167";
-    const tokenUrl = isProdVps ? "/api/api-token-auth/" : `${getServerUrl()}/api-token-auth/`;
-    
+    const tokenUrl = isProdVps ? "/api-token-auth/" : `${getServerUrl()}/api-token-auth/`;
+
     const res = await axios.post<{ token: string }>(
       tokenUrl,
       { username, password },

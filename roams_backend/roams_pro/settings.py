@@ -75,7 +75,7 @@ USING_PGBOUNCER = env.str("DB_PORT", default="5432") == "6432"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": env.str("DB_NAME", "roams_db"),
+        "NAME": env.str("DB_NAME", "roams_pro_db"),
         "USER": env.str("DB_USER", "roams_user"),
         "PASSWORD": env.str("DB_PASSWORD", "MBHA.123"),
         "HOST": env.str("DB_HOST", "127.0.0.1"),
@@ -149,6 +149,7 @@ if not DEBUG:
 
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
+
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
