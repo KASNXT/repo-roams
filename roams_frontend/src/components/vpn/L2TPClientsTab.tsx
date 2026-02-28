@@ -41,14 +41,13 @@ export function L2TPClientsTab() {
   const [openRevoke, setOpenRevoke] = useState(false);
   const [selectedClient, setSelectedClient] = useState<L2TPVPNClient | null>(null);
 
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading, refetch } = useQuery<{ clients?: L2TPVPNClient[] }>({
     queryKey: ["l2tp-status"],
     queryFn: fetchL2TPStatus,
   });
 
-  const clients = data?.clients ?? [];
-  const configuredClients = data?.configured_clients ?? [];
-  const serverRunning = data?.server_running ?? false;
+  // Use only the 'clients' property from the API response, fallback to empty array
+  const clients: L2TPVPNClient[] = (data && Array.isArray(data.clients)) ? data.clients : [];
 
   const revokeMutation = useMutation({
     mutationFn: revokeL2TPClient,
@@ -84,9 +83,9 @@ export function L2TPClientsTab() {
         <div>
           <h3 className="text-lg font-semibold">L2TP/IPsec VPN Clients</h3>
           <div className="flex items-center gap-2 mt-2">
-            <span className={`w-3 h-3 rounded-full ${serverRunning ? "bg-green-500" : "bg-red-500"}`} />
+            <span className={`w-3 h-3 rounded-full ${clients.length > 0 ? "bg-green-500" : "bg-red-500"}`} />
             <span className="text-sm">
-              {serverRunning ? "Server Running" : "Server Down"}
+              {clients.length > 0 ? "Server Running" : "Server Down"}
             </span>
             <span className="text-xs text-muted-foreground">
               ({clients.length} connected)
@@ -108,7 +107,7 @@ export function L2TPClientsTab() {
 
         {isLoading ? (
           <div className="p-6 text-center">Loading...</div>
-        ) : configuredClients.length === 0 ? (
+        ) : clients.length === 0 ? (
           <div className="p-6 text-center text-muted-foreground">
             No clients configured
           </div>
@@ -123,7 +122,7 @@ export function L2TPClientsTab() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {configuredClients.map((client: any) => (
+              {clients.map((client: any) => (
                 <TableRow key={client.id}>
                   <TableCell>{client.name}</TableCell>
                   <TableCell>{client.vpn_ip}</TableCell>
